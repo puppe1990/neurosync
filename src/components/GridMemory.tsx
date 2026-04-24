@@ -25,6 +25,7 @@ export default function GridMemory({ difficulty, onFinish }: GridMemoryProps) {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(difficulty === 'EASY' ? 90 : (difficulty === 'HARD' ? 45 : (difficulty === 'CHAMPION' ? 30 : 60)));
   const [startTime] = useState(Date.now());
+  const [levelStartTime, setLevelStartTime] = useState(0);
 
   const gridSize = 16; // 4x4
 
@@ -44,9 +45,11 @@ export default function GridMemory({ difficulty, onFinish }: GridMemoryProps) {
     setUserSelection([]);
     setGameState('MEMORIZE');
 
+    const memorizeTime = Math.max(1000, 2000 + (level * 100) - (Math.floor(level/3) * 500));
     setTimeout(() => {
       setGameState('PLAY');
-    }, 2000 + (level * 100)); // Adaptive memorization time
+      setLevelStartTime(Date.now());
+    }, memorizeTime); 
   }, [level, difficulty]);
 
   useEffect(() => {
@@ -77,9 +80,13 @@ export default function GridMemory({ difficulty, onFinish }: GridMemoryProps) {
       setUserSelection(nextSelection);
       
       if (nextSelection.length === sequence.length) {
-        setScore(s => s + (level * 10));
-        setLevel(l => l + 1);
-        // nextLevel will be triggered by level change
+        const timeTaken = Date.now() - levelStartTime;
+        // FAST PERFORMANCE: Jump 2 levels if solved in < 2s (adjusted for counts)
+        const isFast = timeTaken < (1500 + sequence.length * 100);
+        const jump = isFast ? 2 : 1;
+        
+        setScore(s => s + (level * 10 * jump));
+        setLevel(l => Math.min(20, l + jump));
       }
     } else {
       // Mistake

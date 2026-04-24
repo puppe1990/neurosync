@@ -48,10 +48,14 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
   };
 
   const generateChallenge = useCallback(() => {
-    const size = difficulty === 'EASY' ? 3 : (difficulty === 'CHAMPION' ? 4 : 3);
+    // Dynamic difficulty factor based on score
+    const dynamicFactor = Math.floor(score / 150);
+    
+    const size = (difficulty === 'EASY' && dynamicFactor < 4) ? 3 : (difficulty === 'CHAMPION' || dynamicFactor >= 4 ? 4 : 3);
     const grid: Grid = Array(size).fill(0).map(() => Array(size).fill(false));
     
-    let blockCount = difficulty === 'EASY' ? 3 : (difficulty === 'NORMAL' ? 4 : (difficulty === 'HARD' ? 5 : 6));
+    const baseBlocks = difficulty === 'EASY' ? 3 : (difficulty === 'NORMAL' ? 4 : (difficulty === 'HARD' ? 5 : 6));
+    const blockCount = Math.min(size * size - 1, baseBlocks + dynamicFactor);
     
     let placed = 0;
     while (placed < blockCount) {
@@ -87,7 +91,6 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
         temp = rotateGrid(temp);
       }
       if(actuallySame) {
-        // Try again if we accidentally created a rotation
         generateChallenge();
         return;
       }
@@ -97,7 +100,7 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
     setCompareGrid(compare);
     setIsSame(same);
     setFeedback(null);
-  }, []);
+  }, [difficulty, score]);
 
   useEffect(() => {
     generateChallenge();

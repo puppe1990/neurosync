@@ -34,21 +34,19 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
   const generateChallenge = useCallback(() => {
     let textIdx, colorIdx;
     
-    if (difficulty === 'EASY') {
-      // 50% chance of congruent (text matches color)
-      if (Math.random() > 0.5) {
-        textIdx = colorIdx = Math.floor(Math.random() * COLORS.length);
-      } else {
-        textIdx = Math.floor(Math.random() * COLORS.length);
-        colorIdx = Math.floor(Math.random() * COLORS.length);
-      }
+    // Dynamic Difficulty: Less congruent entries as score increases
+    const performanceFactor = Math.min(0.8, score / 1500); 
+    const baseCongruentChance = difficulty === 'EASY' ? 0.6 : (difficulty === 'NORMAL' ? 0.3 : 0.1);
+    const congruentChance = baseCongruentChance * (1 - performanceFactor);
+
+    if (Math.random() < congruentChance) {
+      textIdx = colorIdx = Math.floor(Math.random() * COLORS.length);
     } else {
-      // In congruent is more likely as difficulty increases
       textIdx = Math.floor(Math.random() * COLORS.length);
       colorIdx = Math.floor(Math.random() * COLORS.length);
       
-      if (difficulty === 'CHAMPION' && textIdx === colorIdx) {
-        // Force incongruent for champion often
+      // Force incongruent if they happen to be same randomly
+      if (textIdx === colorIdx) {
         colorIdx = (colorIdx + 1) % COLORS.length;
       }
     }
@@ -59,7 +57,7 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
       correctId: COLORS[colorIdx].id
     });
     setFeedback(null);
-  }, [difficulty]);
+  }, [difficulty, score]);
 
   useEffect(() => {
     generateChallenge();

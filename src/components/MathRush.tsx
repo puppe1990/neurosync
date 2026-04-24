@@ -20,6 +20,7 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
   const [userInput, setUserInput] = useState('');
   const [solvedCount, setSolvedCount] = useState(0);
   const [mistakes, setMistakes] = useState(0);
+  const [streak, setStreak] = useState(0);
   
   const getInitialTime = () => {
     if (difficulty === 'EASY') return 45;
@@ -33,20 +34,27 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
 
   const generateQuestion = useCallback(() => {
     const ops = ['+', '-'];
-    if (difficulty !== 'EASY') ops.push('*');
+    
+    // Dynamic Level: Performance-based difficulty modifier
+    const dynamicLevel = Math.floor(streak / 5) + Math.floor(solvedCount / 10);
+    
+    // Unlock multiplication on EASY/NORMAL if performing well
+    if (difficulty !== 'EASY' || dynamicLevel > 1) ops.push('*');
     
     const op = ops[Math.floor(Math.random() * ops.length)];
     let a, b;
 
     if (op === '*') {
-      const max = difficulty === 'CHAMPION' ? 15 : (difficulty === 'HARD' ? 12 : 9);
-      a = Math.floor(Math.random() * max) + 1;
-      b = Math.floor(Math.random() * (difficulty === 'EASY' ? 5 : 10)) + 1;
+      const baseMax = difficulty === 'CHAMPION' ? 15 : (difficulty === 'HARD' ? 12 : 9);
+      const dynamicMax = baseMax + dynamicLevel;
+      a = Math.floor(Math.random() * dynamicMax) + 1;
+      b = Math.floor(Math.random() * (difficulty === 'EASY' ? 5 + dynamicLevel : 10 + Math.floor(dynamicLevel/2))) + 1;
     } else {
-      const max = difficulty === 'EASY' ? 20 : (difficulty === 'NORMAL' ? 50 : 100);
-      a = Math.floor(Math.random() * max) + 1;
-      b = Math.floor(Math.random() * max) + 1;
-      if (op === '-' && difficulty === 'EASY' && b > a) [a, b] = [b, a]; 
+      const baseMax = difficulty === 'EASY' ? 20 : (difficulty === 'NORMAL' ? 50 : 100);
+      const dynamicMax = baseMax + (dynamicLevel * 10);
+      a = Math.floor(Math.random() * dynamicMax) + 1;
+      b = Math.floor(Math.random() * dynamicMax) + 1;
+      if (op === '-' && b > a) [a, b] = [b, a]; 
     }
 
     const text = `${a} ${op === '*' ? '×' : op} ${b}`;
@@ -57,7 +65,7 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
 
     setQuestion({ text, answer: ans });
     setUserInput('');
-  }, []);
+  }, [difficulty, streak, solvedCount]);
 
   useEffect(() => {
     generateQuestion();
@@ -89,19 +97,19 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
     if (parseInt(val) === question.answer) {
       audio.playCorrect();
       setSolvedCount(s => s + 1);
+      setStreak(s => s + 1);
       generateQuestion();
     } else {
       setUserInput(val);
-      // If the length of input matches answer length and it's wrong, we can clear it or show feedback
-      if (val.length >= question.answer.toString().length) {
-         // Brief delay then clear if wrong
+      if (val.length >= question.answer.toString().length || (val.length > 0 && !question.answer.toString().startsWith(val) && val !== '-')) {
          setTimeout(() => {
            if (parseInt(val) !== question.answer) {
              audio.playWrong();
              setUserInput('');
              setMistakes(m => m + 1);
+             setStreak(0);
            }
-         }, 200);
+         }, 150);
       }
     }
   };

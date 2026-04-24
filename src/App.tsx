@@ -11,6 +11,7 @@ import MathRush from './components/MathRush';
 import GridMemory from './components/GridMemory';
 import StroopTest from './components/StroopTest';
 import ShapeStack from './components/ShapeStack';
+import TutorialOverlay from './components/TutorialOverlay';
 
 // Views
 type View = 'MENU' | 'TRAINING' | 'STATS' | 'PUZZLE_DETAIL' | 'RESULTS';
@@ -20,6 +21,7 @@ export default function App() {
   const [selectedPuzzle, setSelectedPuzzle] = useState<PuzzleConfig | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('NORMAL');
   const [lastResult, setLastResult] = useState<PuzzleResult | null>(null);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [stats, setStats] = useState<UserStats>(() => {
     const saved = localStorage.getItem('neurosync_stats');
     return saved ? JSON.parse(saved) : { sessions: [], bestScores: {}, dailyStreak: 0 };
@@ -91,9 +93,10 @@ export default function App() {
           {currentView === 'MENU' && (
             <motion.div
               key="menu"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.1 }}
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 1.02, y: -10 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="grid grid-cols-1 md:grid-cols-12 gap-8"
             >
               <div className="md:col-span-4 flex flex-col gap-6">
@@ -170,9 +173,10 @@ export default function App() {
           {currentView === 'PUZZLE_DETAIL' && selectedPuzzle && (
              <motion.div
                 key="puzzle-detail"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                 className="max-w-2xl mx-auto w-full"
              >
                 <button 
@@ -231,23 +235,42 @@ export default function App() {
                     </div>
                   </div>
 
-                  <button 
-                    disabled={!['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id)}
-                    className="w-full bg-brand-blue text-white border-4 border-black rounded-2xl py-6 font-black text-2xl tracking-widest uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    onClick={() => setCurrentView('TRAINING')}
-                  >
-                    {['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id) ? 'COMEÇAR TREINO' : 'CARREGANDO...'}
-                  </button>
+                  <div className="flex gap-4 mb-8">
+                    <button 
+                      className="flex-1 bg-white border-4 border-black rounded-2xl py-6 font-black text-xl tracking-widest uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2"
+                      onClick={() => setShowTutorial(true)}
+                    >
+                      <IconMap.HelpCircle size={24} />
+                      COMO JOGAR?
+                    </button>
+                    <button 
+                      disabled={!['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id)}
+                      className="flex-2 bg-brand-blue text-white border-4 border-black rounded-2xl py-6 font-black text-xl tracking-widest uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      onClick={() => setCurrentView('TRAINING')}
+                    >
+                      {['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id) ? 'COMEÇAR TREINO' : 'CARREGANDO...'}
+                    </button>
+                  </div>
                 </div>
-             </motion.div>
-          )}
+
+                <AnimatePresence>
+                  {showTutorial && selectedPuzzle?.tutorial && (
+                    <TutorialOverlay 
+                      steps={selectedPuzzle.tutorial} 
+                      onClose={() => setShowTutorial(false)} 
+                    />
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
 
           {currentView === 'TRAINING' && selectedPuzzle && (
             <motion.div
               key="active-puzzle"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.05 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 200 }}
               className="w-full"
             >
               <div className="bg-white brutalist-card p-8 mb-4">
@@ -268,8 +291,10 @@ export default function App() {
           {currentView === 'RESULTS' && lastResult && (
             <motion.div
               key="results"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.8, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 15, stiffness: 200 }}
               className="max-w-md mx-auto text-center"
             >
               <div className="bg-brand-blue border-4 border-black p-12 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-12 relative overflow-hidden">
@@ -305,8 +330,10 @@ export default function App() {
           {currentView === 'STATS' && (
             <motion.div
               key="stats"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -40 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="max-w-4xl mx-auto w-full"
             >
               <div className="flex items-center gap-4 mb-12">
