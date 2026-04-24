@@ -27,6 +27,7 @@ export interface UserStats {
   sessions: TrainingSession[];
   bestScores: Record<string, number>;
   dailyStreak: number;
+  lastChallengeDate?: string;
 }
 
 export interface TutorialStep {
@@ -90,6 +91,30 @@ export const PUZZLES: PuzzleConfig[] = [
       { text: "Duas grades com padrões de blocos aparecerão lado a lado." },
       { text: "A grade da direita pode estar rotacionada em 90°, 180° ou 270°." },
       { text: "Decida se o padrão de blocos é EXATAMENTE o mesmo ou não." }
+    ]
+  },
+  {
+    id: 'pattern-pursuit',
+    name: 'Pattern Pursuit',
+    category: 'Visual',
+    description: 'Encontre o ícone intruso na grade o mais rápido possível.',
+    icon: 'Search',
+    tutorial: [
+      { text: "Uma grade de ícones aparecerá na tela." },
+      { text: "Todos os ícones são iguais, EXCETO UM." },
+      { text: "Clique no ícone diferente para avançar e ganhar pontos." }
+    ]
+  },
+  {
+    id: 'neural-react',
+    name: 'Neural React',
+    category: 'Reaction',
+    description: 'Teste sua velocidade de reação. Clique assim que a cor mudar!',
+    icon: 'Zap',
+    tutorial: [
+      { text: "Aguarde a tela ficar VERDE." },
+      { text: "Assim que a cor mudar, CLIQUE o mais rápido que puder." },
+      { text: "Tente bater seu recorde de milissegundos!" }
     ]
   },
 ];

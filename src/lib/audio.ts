@@ -5,11 +5,62 @@
 
 class AudioManager {
   private ctx: AudioContext | null = null;
+  private musicEnabled: boolean = false;
+  private musicInterval: number | null = null;
+  private currentMode: 'calm' | 'upbeat' = 'calm';
+  private beat: number = 0;
 
   private init() {
     if (!this.ctx) {
       this.ctx = new AudioContext();
     }
+  }
+
+  public setMusicEnabled(enabled: boolean) {
+    this.musicEnabled = enabled;
+    if (enabled) {
+      this.startMusic();
+    } else {
+      this.stopMusic();
+    }
+  }
+
+  public isMusicEnabled() {
+    return this.musicEnabled;
+  }
+
+  public setMusicMode(mode: 'calm' | 'upbeat') {
+    this.currentMode = mode;
+  }
+
+  private startMusic() {
+    if (this.musicInterval) return;
+    this.musicInterval = window.setInterval(() => this.tick(), 250);
+  }
+
+  private stopMusic() {
+    if (this.musicInterval) {
+      clearInterval(this.musicInterval);
+      this.musicInterval = null;
+    }
+  }
+
+  private tick() {
+    if (!this.musicEnabled) return;
+    this.init();
+    
+    if (this.currentMode === 'calm') {
+      // Arpeggio: C G C E every 4 beats
+      if (this.beat % 8 === 0) this.playTone(261.63, 1, 'sine', 0.02); // C4
+      if (this.beat % 8 === 4) this.playTone(392.00, 1, 'sine', 0.02); // G4
+    } else {
+      // More upbeat: faster pulse
+      if (this.beat % 2 === 0) {
+        const freqs = [261.63, 329.63, 392.00, 523.25];
+        this.playTone(freqs[this.beat % 4], 0.2, 'sine', 0.015);
+      }
+    }
+    this.beat = (this.beat + 1) % 16;
   }
 
   private playTone(freq: number, duration: number, type: OscillatorType = 'sine', volume: number = 0.1) {

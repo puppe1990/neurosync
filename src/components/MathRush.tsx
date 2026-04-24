@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'motion/react';
 import { IconMap } from '../icons';
 import { Difficulty } from '../types';
@@ -13,16 +13,27 @@ import { audio } from '../lib/audio';
 interface MathRushProps {
   difficulty: Difficulty;
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
+  isDaily?: boolean;
+  seed?: number;
 }
 
-export default function MathRush({ difficulty, onFinish }: MathRushProps) {
+export default function MathRush({ difficulty, onFinish, isDaily, seed }: MathRushProps) {
   const [question, setQuestion] = useState<{ text: string; answer: number } | null>(null);
   const [userInput, setUserInput] = useState('');
   const [solvedCount, setSolvedCount] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [streak, setStreak] = useState(0);
   
+  // Seeded random state
+  const seedRef = useRef(seed || 0);
+  const seededRandom = useCallback(() => {
+    if (!seed) return Math.random();
+    seedRef.current = (seedRef.current * 9301 + 49297) % 233280;
+    return seedRef.current / 233280;
+  }, [seed]);
+
   const getInitialTime = () => {
+    if (isDaily) return 60; // Standardized time for daily challenge
     if (difficulty === 'EASY') return 45;
     if (difficulty === 'HARD') return 25;
     if (difficulty === 'CHAMPION') return 15;
@@ -41,19 +52,20 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
     // Unlock multiplication on EASY/NORMAL if performing well
     if (difficulty !== 'EASY' || dynamicLevel > 1) ops.push('*');
     
-    const op = ops[Math.floor(Math.random() * ops.length)];
+    const rng = seed ? seededRandom : Math.random;
+    const op = ops[Math.floor(rng() * ops.length)];
     let a, b;
 
     if (op === '*') {
       const baseMax = difficulty === 'CHAMPION' ? 15 : (difficulty === 'HARD' ? 12 : 9);
       const dynamicMax = baseMax + dynamicLevel;
-      a = Math.floor(Math.random() * dynamicMax) + 1;
-      b = Math.floor(Math.random() * (difficulty === 'EASY' ? 5 + dynamicLevel : 10 + Math.floor(dynamicLevel/2))) + 1;
+      a = Math.floor(rng() * dynamicMax) + 1;
+      b = Math.floor(rng() * (difficulty === 'EASY' ? 5 + dynamicLevel : 10 + Math.floor(dynamicLevel/2))) + 1;
     } else {
       const baseMax = difficulty === 'EASY' ? 20 : (difficulty === 'NORMAL' ? 50 : 100);
       const dynamicMax = baseMax + (dynamicLevel * 10);
-      a = Math.floor(Math.random() * dynamicMax) + 1;
-      b = Math.floor(Math.random() * dynamicMax) + 1;
+      a = Math.floor(rng() * dynamicMax) + 1;
+      b = Math.floor(rng() * dynamicMax) + 1;
       if (op === '-' && b > a) [a, b] = [b, a]; 
     }
 
@@ -117,11 +129,19 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
   return (
     <div className="flex flex-col items-center max-w-sm mx-auto">
       <div className="w-full flex justify-between items-center mb-8">
-        <div className="bg-black text-white px-4 py-2 border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(37,99,235,1)]">
-          <div className="flex items-center gap-2">
-            <IconMap.Timer size={14} className="text-brand-gold" />
-            <span className="font-black text-xl italic">{timeLeft}s</span>
+        <div className="flex flex-col gap-1">
+          <div className="bg-black text-white px-4 py-2 border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(37,99,235,1)]">
+            <div className="flex items-center gap-2">
+              <IconMap.Timer size={14} className="text-brand-gold" />
+              <span className="font-black text-xl italic">{timeLeft}s</span>
+            </div>
           </div>
+          {isDaily && (
+            <div className="text-[10px] font-black uppercase text-brand-orange bg-black px-2 py-0.5 rounded border border-black flex items-center gap-1">
+              <IconMap.Zap size={10} />
+              Daily Challenge
+            </div>
+          )}
         </div>
         <div className="bg-brand-green border-4 border-black px-4 py-2 rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <div className="flex items-center gap-2">

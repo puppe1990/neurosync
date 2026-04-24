@@ -17,7 +17,12 @@ import {
   ChevronRight,
   ChevronLeft,
   Timer,
-  Target
+  Target,
+  HelpCircle,
+  Volume2,
+  VolumeX,
+  Zap,
+  Search
 } from 'lucide-react';
 
 export const IconMap = {
@@ -34,7 +39,12 @@ export const IconMap = {
   ChevronRight,
   ChevronLeft,
   Timer,
-  Target
+  Target,
+  HelpCircle,
+  Volume2,
+  VolumeX,
+  Zap,
+  Search
 };
 
 export type IconName = keyof typeof IconMap;

@@ -6,12 +6,14 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconMap } from './icons';
-import { PUZZLES, PuzzleConfig, UserStats, PuzzleResult, Difficulty } from './types.ts';
+import { PUZZLES, PuzzleConfig, UserStats, PuzzleResult, Difficulty } from './types';
 import MathRush from './components/MathRush';
 import GridMemory from './components/GridMemory';
 import StroopTest from './components/StroopTest';
 import ShapeStack from './components/ShapeStack';
 import TutorialOverlay from './components/TutorialOverlay';
+import PatternPursuit from './components/PatternPursuit';
+import NeuralReact from './components/NeuralReact';
 
 // Views
 type View = 'MENU' | 'TRAINING' | 'STATS' | 'PUZZLE_DETAIL' | 'RESULTS';
@@ -22,14 +24,38 @@ export default function App() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('NORMAL');
   const [lastResult, setLastResult] = useState<PuzzleResult | null>(null);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(false);
+  const [isDailyChallenge, setIsDailyChallenge] = useState(false);
   const [stats, setStats] = useState<UserStats>(() => {
     const saved = localStorage.getItem('neurosync_stats');
     return saved ? JSON.parse(saved) : { sessions: [], bestScores: {}, dailyStreak: 0 };
   });
 
+  const getDailySeed = () => {
+    const date = new Date();
+    return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+  };
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const isChallengeDoneToday = stats.lastChallengeDate === todayStr;
+
   useEffect(() => {
     localStorage.setItem('neurosync_stats', JSON.stringify(stats));
   }, [stats]);
+
+  useEffect(() => {
+    import('./lib/audio').then(({ audio }) => {
+      audio.setMusicMode(currentView === 'TRAINING' ? 'upbeat' : 'calm');
+    });
+  }, [currentView]);
+
+  const toggleMusic = () => {
+    import('./lib/audio').then(({ audio }) => {
+      const newState = !musicEnabled;
+      setMusicEnabled(newState);
+      audio.setMusicEnabled(newState);
+    });
+  };
 
   const handleFinishPuzzle = (score: number, accuracy: number, timeSpent: number) => {
     if (!selectedPuzzle) return;
@@ -50,9 +76,15 @@ export default function App() {
       if ((bestScores[result.puzzleId] || 0) < score) {
         bestScores[result.puzzleId] = score;
       }
+      
+      const isDaily = isDailyChallenge && selectedPuzzle.id === 'math-rush';
+      const streakUpdate = isDaily && prev.lastChallengeDate !== todayStr ? prev.dailyStreak + 1 : prev.dailyStreak;
+
       return {
         ...prev,
         bestScores,
+        dailyStreak: streakUpdate,
+        lastChallengeDate: isDaily ? todayStr : prev.lastChallengeDate,
         sessions: [...prev.sessions, {
           id: Math.random().toString(36).substr(2, 9),
           timestamp: result.timestamp,
@@ -62,6 +94,7 @@ export default function App() {
       };
     });
 
+    setIsDailyChallenge(false);
     setCurrentView('RESULTS');
   };
 
@@ -70,20 +103,39 @@ export default function App() {
       {/* Header */}
       <header className="flex justify-between items-center mb-12">
         <div className="flex items-center gap-4 cursor-pointer" onClick={() => setCurrentView('MENU')}>
-          <div className="bg-brand-blue w-16 h-16 border-4 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.05, 1],
+            }}
+            transition={{ 
+              duration: 3, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+            className="bg-brand-blue w-16 h-16 border-4 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+          >
              <IconMap.Brain size={32} className="text-white" />
-          </div>
+          </motion.div>
           <h1 className="text-4xl font-black text-gray-900 tracking-tight uppercase">NeuroSync</h1>
         </div>
         
-        <div className="flex items-center gap-6 bg-white border-4 border-black p-3 px-6 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+        <div className="flex items-center gap-4">
           <button 
-            onClick={() => setCurrentView('STATS')}
-            className={`text-right leading-none group transition-colors ${currentView === 'STATS' ? 'text-brand-orange' : ''}`}
+            onClick={toggleMusic}
+            className={`w-12 h-12 bg-white border-4 border-black rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all active:translate-y-[1px] ${musicEnabled ? 'text-brand-orange' : 'text-gray-300'}`}
           >
-            <p className="text-[10px] font-black uppercase text-gray-500">Neuro Perfil</p>
-            <p className="text-xl font-black underline underline-offset-4 decoration-2">STREAK: {stats.dailyStreak}</p>
+            {musicEnabled ? <IconMap.Volume2 size={20} /> : <IconMap.VolumeX size={20} />}
           </button>
+          
+          <div className="flex items-center gap-6 bg-white border-4 border-black p-3 px-6 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <button 
+              onClick={() => setCurrentView('STATS')}
+              className={`text-right leading-none group transition-colors ${currentView === 'STATS' ? 'text-brand-orange' : ''}`}
+            >
+              <p className="text-[10px] font-black uppercase text-gray-500">Neuro Perfil</p>
+              <p className="text-xl font-black underline underline-offset-4 decoration-2">STREAK: {stats.dailyStreak}</p>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -93,29 +145,52 @@ export default function App() {
           {currentView === 'MENU' && (
             <motion.div
               key="menu"
-              initial={{ opacity: 0, scale: 0.98, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 1.02, y: -10 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={{
+                initial: { opacity: 0 },
+                animate: { 
+                  opacity: 1,
+                  transition: { staggerChildren: 0.08, delayChildren: 0.1 }
+                },
+                exit: { 
+                  opacity: 0, 
+                  scale: 1.05,
+                  transition: { duration: 0.2, ease: "easeIn" }
+                }
+              }}
               className="grid grid-cols-1 md:grid-cols-12 gap-8"
             >
-              <div className="md:col-span-4 flex flex-col gap-6">
+              <motion.div 
+                variants={{
+                  initial: { opacity: 0, x: -20 },
+                  animate: { opacity: 1, x: 0 }
+                }}
+                className="md:col-span-4 flex flex-col gap-6"
+              >
                 <div className="bg-brand-blue border-4 border-black p-6 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden flex flex-col min-h-[300px]">
                   <div className="absolute -top-4 -right-4 bg-brand-gold w-24 h-24 rounded-full border-4 border-black"></div>
                   <p className="text-sm font-black uppercase text-blue-900 mb-2">Desafio Hoje</p>
                   <h2 className="text-3xl font-black text-white leading-tight mb-4">Neural Prime</h2>
                   <div className="bg-white border-2 border-black p-4 rounded-xl relative mt-auto">
-                    <p className="text-lg font-bold italic leading-snug">"Sua memória aumentou 12% hoje! Pronto para mais?"</p>
+                    <p className="text-lg font-bold italic leading-snug">
+                      {isChallengeDoneToday 
+                        ? "Desafio completo! Você dominou o Neural Prime hoje." 
+                        : "Sua memória aumentou 12% hoje! Pronto para o desafio diário?"}
+                    </p>
                     <div className="absolute -bottom-2 left-6 w-4 h-4 bg-white border-b-2 border-r-2 border-black rotate-45"></div>
                   </div>
                   <button 
+                    disabled={isChallengeDoneToday}
                     onClick={() => {
-                      setSelectedPuzzle(PUZZLES[Math.floor(Math.random() * 2)]);
+                      setSelectedPuzzle(PUZZLES.find(p => p.id === 'math-rush') || PUZZLES[0]);
+                      setIsDailyChallenge(true);
                       setCurrentView('TRAINING');
                     }}
-                    className="mt-6 brutalist-button w-full text-center"
+                    className={`mt-6 brutalist-button w-full text-center ${isChallengeDoneToday ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    Treinar Agora
+                    {isChallengeDoneToday ? 'CONCLUÍDO' : 'Jogar Desafio'}
                   </button>
                 </div>
 
@@ -128,7 +203,7 @@ export default function App() {
                     <div className="bg-brand-gold w-full rounded-t-lg border-2 border-black border-b-0" style={{ height: '60%' }}></div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {PUZZLES.map((puzzle, idx) => {
@@ -137,8 +212,12 @@ export default function App() {
                   const Icon = IconMap[puzzle.icon as keyof typeof IconMap];
                   
                   return (
-                    <div 
+                    <motion.div 
                       key={puzzle.id}
+                      variants={{
+                        initial: { opacity: 0, y: 30, scale: 0.9 },
+                        animate: { opacity: 1, y: 0, scale: 1 }
+                      }}
                       onClick={() => {
                         setSelectedPuzzle(puzzle);
                         setCurrentView('PUZZLE_DETAIL');
@@ -155,17 +234,23 @@ export default function App() {
                       <div className="mt-4 text-[10px] font-black bg-black text-white inline-block px-3 py-1 rounded-full uppercase">
                         {idx === 0 ? 'Expert' : idx === 1 ? 'Medium' : 'Normal'}
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
 
-                <div className="sm:col-span-2 bg-gray-900 border-4 border-black p-6 rounded-3xl flex flex-col sm:flex-row justify-between items-center shadow-[8px_8px_0px_0px_rgba(249,115,22,0.4)]">
+                <motion.div 
+                  variants={{
+                    initial: { opacity: 0, y: 40 },
+                    animate: { opacity: 1, y: 0 }
+                  }}
+                  className="sm:col-span-2 bg-gray-900 border-4 border-black p-6 rounded-3xl flex flex-col sm:flex-row justify-between items-center shadow-[8px_8px_0px_0px_rgba(249,115,22,0.4)]"
+                >
                   <div className="flex flex-col text-center sm:text-left mb-6 sm:mb-0">
                     <span className="text-brand-orange font-black italic uppercase text-lg">Grande Desafio</span>
                     <h4 className="text-white text-3xl font-black tracking-tight uppercase italic">Copa Bio-Sensorial</h4>
                   </div>
                   <button className="bg-white border-4 border-black px-8 py-3 rounded-2xl font-black text-xl hover:bg-brand-orange transition-colors">JOGAR AGORA</button>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           )}
@@ -244,11 +329,11 @@ export default function App() {
                       COMO JOGAR?
                     </button>
                     <button 
-                      disabled={!['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id)}
+                      disabled={!['math-rush', 'grid-memory', 'stroop-test', 'shape-stack', 'pattern-pursuit', 'neural-react'].includes(selectedPuzzle.id)}
                       className="flex-2 bg-brand-blue text-white border-4 border-black rounded-2xl py-6 font-black text-xl tracking-widest uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                       onClick={() => setCurrentView('TRAINING')}
                     >
-                      {['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id) ? 'COMEÇAR TREINO' : 'CARREGANDO...'}
+                      {['math-rush', 'grid-memory', 'stroop-test', 'shape-stack', 'pattern-pursuit', 'neural-react'].includes(selectedPuzzle.id) ? 'COMEÇAR TREINO' : 'CARREGANDO...'}
                     </button>
                   </div>
                 </div>
@@ -274,10 +359,19 @@ export default function App() {
               className="w-full"
             >
               <div className="bg-white brutalist-card p-8 mb-4">
-                {selectedPuzzle.id === 'math-rush' && <MathRush difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
+                {selectedPuzzle.id === 'math-rush' && (
+                  <MathRush 
+                    difficulty={selectedDifficulty} 
+                    onFinish={handleFinishPuzzle} 
+                    isDaily={isDailyChallenge}
+                    seed={isDailyChallenge ? getDailySeed() : undefined}
+                  />
+                )}
                 {selectedPuzzle.id === 'grid-memory' && <GridMemory difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
                 {selectedPuzzle.id === 'stroop-test' && <StroopTest difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
                 {selectedPuzzle.id === 'shape-stack' && <ShapeStack difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
+                {selectedPuzzle.id === 'pattern-pursuit' && <PatternPursuit difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
+                {selectedPuzzle.id === 'neural-react' && <NeuralReact onFinish={handleFinishPuzzle} />}
               </div>
               <button 
                 onClick={() => setCurrentView('MENU')}
