@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconMap } from './icons';
-import { PUZZLES, PuzzleConfig, UserStats, PuzzleResult, Difficulty } from './types';
+import { PUZZLES, PuzzleConfig, UserStats, PuzzleResult, Difficulty, AuthenticatedUser, RankingEntry } from './types';
 import MathRush from './components/MathRush';
 import GridMemory from './components/GridMemory';
 import StroopTest from './components/StroopTest';
@@ -16,13 +16,15 @@ import PatternPursuit from './components/PatternPursuit';
 import NeuralReact from './components/NeuralReact';
 
 // Views
-type View = 'MENU' | 'TRAINING' | 'STATS' | 'PUZZLE_DETAIL' | 'RESULTS';
+type View = 'MENU' | 'TRAINING' | 'STATS' | 'PUZZLE_DETAIL' | 'RESULTS' | 'RANKINGS';
 
-export default function App() {
+export default function App({initialUser}: {initialUser: AuthenticatedUser}) {
   const [currentView, setCurrentView] = useState<View>('MENU');
   const [selectedPuzzle, setSelectedPuzzle] = useState<PuzzleConfig | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('NORMAL');
   const [lastResult, setLastResult] = useState<PuzzleResult | null>(null);
+  const [rankings, setRankings] = useState<RankingEntry[]>([]);
+  const [rankingsLoading, setRankingsLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [musicEnabled, setMusicEnabled] = useState(false);
   const [isDailyChallenge, setIsDailyChallenge] = useState(false);
@@ -42,6 +44,17 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('neurosync_stats', JSON.stringify(stats));
   }, [stats]);
+
+  useEffect(() => {
+    if (currentView !== 'RANKINGS') return;
+
+    setRankingsLoading(true);
+    fetch('/api/rankings?limit=25', {cache: 'no-store'})
+      .then((response) => response.json())
+      .then((data) => setRankings(data.rankings ?? []))
+      .catch(() => setRankings([]))
+      .finally(() => setRankingsLoading(false));
+  }, [currentView]);
 
   useEffect(() => {
     import('./lib/audio').then(({ audio }) => {
@@ -70,6 +83,21 @@ export default function App() {
       timestamp: new Date().toISOString()
     };
 
+    fetch('/api/results', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        puzzleId: result.puzzleId,
+        category: result.category,
+        difficulty: result.difficulty,
+        score: result.score,
+        accuracy: result.accuracy,
+        timeSpent: result.timeSpent,
+      }),
+    }).catch(() => {
+      // Local stats still update immediately; persistence can retry on the next game.
+    });
+
     setLastResult(result);
     setStats(prev => {
       const bestScores = { ...prev.bestScores };
@@ -96,6 +124,11 @@ export default function App() {
 
     setIsDailyChallenge(false);
     setCurrentView('RESULTS');
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/logout', {method: 'POST'});
+    window.location.href = '/signin';
   };
 
   return (
@@ -134,6 +167,18 @@ export default function App() {
             >
               <p className="text-[10px] font-black uppercase text-gray-500">Neuro Perfil</p>
               <p className="text-xl font-black underline underline-offset-4 decoration-2">STREAK: {stats.dailyStreak}</p>
+            </button>
+            <div className="hidden md:block w-1 h-10 bg-black"></div>
+            <div className="hidden md:flex flex-col leading-none">
+              <span className="text-[10px] font-black uppercase text-gray-500">Player</span>
+              <span className="text-sm font-black uppercase">{initialUser.name}</span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="w-10 h-10 bg-brand-orange border-4 border-black rounded-xl flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all"
+              title="Sair"
+            >
+              <IconMap.LogOut size={18} className="text-white" />
             </button>
           </div>
         </div>
@@ -477,13 +522,78 @@ export default function App() {
               </div>
             </motion.div>
           )}
+
+          {currentView === 'RANKINGS' && (
+            <motion.div
+              key="rankings"
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -40 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="max-w-5xl mx-auto w-full"
+            >
+              <div className="flex items-center justify-between gap-4 mb-10">
+                <div className="flex items-center gap-4">
+                  <button onClick={() => setCurrentView('MENU')} className="brutalist-button">
+                    <IconMap.ChevronLeft size={16} />
+                  </button>
+                  <h2 className="text-4xl font-black tracking-tight uppercase">Ranking Neural</h2>
+                </div>
+                <div className="bg-brand-gold border-4 border-black rounded-2xl px-5 py-3 font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  TOP 25
+                </div>
+              </div>
+
+              <div className="brutalist-card overflow-hidden">
+                <div className="p-6 bg-black text-white grid grid-cols-12 gap-4 text-[10px] font-black uppercase tracking-widest">
+                  <span className="col-span-2">Rank</span>
+                  <span className="col-span-4">Player</span>
+                  <span className="col-span-3">Puzzle</span>
+                  <span className="col-span-3 text-right">Score</span>
+                </div>
+                <div className="divide-y-4 divide-black">
+                  {rankingsLoading && (
+                    <div className="p-16 text-center font-black uppercase tracking-[0.2em] text-gray-400">
+                      Sincronizando ranking...
+                    </div>
+                  )}
+                  {!rankingsLoading && rankings.map((entry) => (
+                    <div key={entry.id} className="p-6 bg-white hover:bg-brand-yellow transition-colors grid grid-cols-12 gap-4 items-center">
+                      <div className="col-span-2">
+                        <span className="inline-flex w-12 h-12 bg-brand-blue text-white border-4 border-black rounded-xl items-center justify-center font-black text-xl">
+                          {entry.rank}
+                        </span>
+                      </div>
+                      <div className="col-span-4 min-w-0">
+                        <p className="font-black uppercase truncate">{entry.playerName}</p>
+                        <p className="text-[10px] font-black uppercase text-gray-500">{new Date(entry.createdAt).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div className="col-span-3 min-w-0">
+                        <p className="font-black uppercase truncate">{PUZZLES.find((p) => p.id === entry.puzzleId)?.name ?? entry.puzzleId}</p>
+                        <p className="text-[10px] font-black uppercase text-gray-500">{entry.difficulty}</p>
+                      </div>
+                      <div className="col-span-3 text-right">
+                        <p className="text-3xl font-black italic text-brand-orange">{entry.score}</p>
+                        <p className="text-[10px] font-black uppercase text-gray-500">{(entry.accuracy * 100).toFixed(0)}% / {(entry.timeSpent / 1000).toFixed(1)}s</p>
+                      </div>
+                    </div>
+                  ))}
+                  {!rankingsLoading && rankings.length === 0 && (
+                    <div className="p-20 text-center text-gray-400 font-black uppercase tracking-[0.2em]">
+                      Nenhum score sincronizado ainda.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
       {/* Footer */}
       <footer className="mt-12 flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t-4 border-black/10">
         <div className="flex gap-4">
-          <button className="brutalist-button">Ranking</button>
+          <button onClick={() => setCurrentView('RANKINGS')} className="brutalist-button">Ranking</button>
           <button className="brutalist-button">Config</button>
         </div>
         <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">© 2026 NEURO-SPEC LABS // SYSTEM STATUS: ACTIVE</p>

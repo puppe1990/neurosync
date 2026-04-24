@@ -8,5 +8,8 @@ coverage/
 .DS_Store
 *.log
 *.tsbuildinfo
+.neurosync-local.db
+.playwright-mcp/
+memdb1
 .env*
 !.env.example

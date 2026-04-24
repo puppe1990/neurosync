@@ -30,6 +30,27 @@ export interface UserStats {
   lastChallengeDate?: string;
 }
 
+export interface AuthenticatedUser {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
+
+export interface RankingEntry {
+  rank: number;
+  id: string;
+  userId: string;
+  playerName: string;
+  puzzleId: string;
+  category: string;
+  difficulty: string;
+  score: number;
+  accuracy: number;
+  timeSpent: number;
+  createdAt: string;
+}
+
 export interface TutorialStep {
   text: string;
   target?: string; // Optional element to highlight

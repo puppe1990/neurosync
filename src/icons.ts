@@ -22,7 +22,8 @@ import {
   Volume2,
   VolumeX,
   Zap,
-  Search
+  Search,
+  LogOut
 } from 'lucide-react';
 
 export const IconMap = {
@@ -44,7 +45,8 @@ export const IconMap = {
   Volume2,
   VolumeX,
   Zap,
-  Search
+  Search,
+  LogOut
 };
 
 export type IconName = keyof typeof IconMap;
