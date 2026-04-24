@@ -48,22 +48,27 @@ class AudioManager {
   private tick() {
     if (!this.musicEnabled) return;
     this.init();
-    
+
     if (this.currentMode === 'calm') {
       // Arpeggio: C G C E every 4 beats
       if (this.beat % 8 === 0) this.playTone(261.63, 1, 'sine', 0.02); // C4
-      if (this.beat % 8 === 4) this.playTone(392.00, 1, 'sine', 0.02); // G4
+      if (this.beat % 8 === 4) this.playTone(392.0, 1, 'sine', 0.02); // G4
     } else {
       // More upbeat: faster pulse
       if (this.beat % 2 === 0) {
-        const freqs = [261.63, 329.63, 392.00, 523.25];
+        const freqs = [261.63, 329.63, 392.0, 523.25];
         this.playTone(freqs[this.beat % 4], 0.2, 'sine', 0.015);
       }
     }
     this.beat = (this.beat + 1) % 16;
   }
 
-  private playTone(freq: number, duration: number, type: OscillatorType = 'sine', volume: number = 0.1) {
+  private playTone(
+    freq: number,
+    duration: number,
+    type: OscillatorType = 'sine',
+    volume: number = 0.1,
+  ) {
     this.init();
     if (!this.ctx) return;
 
@@ -72,9 +77,12 @@ class AudioManager {
 
     osc.type = type;
     osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-    
+
     gain.gain.setValueAtTime(volume, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+    gain.gain.exponentialRampToValueAtTime(
+      0.01,
+      this.ctx.currentTime + duration,
+    );
 
     osc.connect(gain);
     gain.connect(this.ctx.destination);

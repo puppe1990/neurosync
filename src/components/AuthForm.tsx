@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import {useActionState} from 'react';
-import type {AuthFormState} from '@/app/actions/auth';
+import { useActionState } from 'react';
+import type { AuthFormState } from '@/app/actions/auth';
 
 interface AuthFormProps {
   mode: 'signin' | 'signup';
   action: (state: AuthFormState, formData: FormData) => Promise<AuthFormState>;
 }
 
-export default function AuthForm({mode, action}: AuthFormProps) {
+export default function AuthForm({ mode, action }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
   const isSignup = mode === 'signup';
 
@@ -74,11 +74,17 @@ export default function AuthForm({mode, action}: AuthFormProps) {
 
       <div className="text-center text-sm font-black uppercase">
         {isSignup ? (
-          <Link className="underline decoration-4 underline-offset-4" href="/signin">
+          <Link
+            className="underline decoration-4 underline-offset-4"
+            href="/signin"
+          >
             Ja tenho conta
           </Link>
         ) : (
-          <Link className="underline decoration-4 underline-offset-4" href="/signup">
+          <Link
+            className="underline decoration-4 underline-offset-4"
+            href="/signup"
+          >
             Criar conta nova
           </Link>
         )}

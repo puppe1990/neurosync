@@ -3,7 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type PuzzleCategory = 'Arithmetic' | 'Memory' | 'Logic' | 'Spatial' | 'Visual' | 'Reaction';
+export type PuzzleCategory =
+  | 'Arithmetic'
+  | 'Memory'
+  | 'Logic'
+  | 'Spatial'
+  | 'Visual'
+  | 'Reaction';
 export type Difficulty = 'EASY' | 'NORMAL' | 'HARD' | 'CHAMPION';
 
 export interface PuzzleResult {
@@ -70,13 +76,14 @@ export const PUZZLES: PuzzleConfig[] = [
     id: 'math-rush',
     name: 'Cálculo Rápido',
     category: 'Arithmetic',
-    description: 'Resolva operações aritméticas simples o mais rápido possível.',
+    description:
+      'Resolva operações aritméticas simples o mais rápido possível.',
     icon: 'Calculator',
     tutorial: [
-      { text: "Observe a operação matemática no centro da tela." },
-      { text: "Use o teclado numérico para digitar o resultado correto." },
-      { text: "O jogo avança automaticamente assim que você acerta!" }
-    ]
+      { text: 'Observe a operação matemática no centro da tela.' },
+      { text: 'Use o teclado numérico para digitar o resultado correto.' },
+      { text: 'O jogo avança automaticamente assim que você acerta!' },
+    ],
   },
   {
     id: 'grid-memory',
@@ -85,10 +92,14 @@ export const PUZZLES: PuzzleConfig[] = [
     description: 'Memorize a posição dos blocos que aparecem na tela.',
     icon: 'Grid3X3',
     tutorial: [
-      { text: "Primeiro, alguns blocos ficarão destacados. Tente memorizar suas posições." },
-      { text: "Quando eles desaparecerem, clique nos espaços vazios para revelar os blocos." },
-      { text: "Acerte todos para subir de nível e ganhar mais tempo." }
-    ]
+      {
+        text: 'Primeiro, alguns blocos ficarão destacados. Tente memorizar suas posições.',
+      },
+      {
+        text: 'Quando eles desaparecerem, clique nos espaços vazios para revelar os blocos.',
+      },
+      { text: 'Acerte todos para subir de nível e ganhar mais tempo.' },
+    ],
   },
   {
     id: 'stroop-test',
@@ -97,10 +108,12 @@ export const PUZZLES: PuzzleConfig[] = [
     description: 'Identifique a cor da palavra, ignorando o texto escrito.',
     icon: 'Palette',
     tutorial: [
-      { text: "Uma palavra colorida aparecerá no centro. IGNORE o que está escrito." },
-      { text: "Olhe apenas para a COR da fonte." },
-      { text: "Selecione o botão que nomeia a COR correta." }
-    ]
+      {
+        text: 'Uma palavra colorida aparecerá no centro. IGNORE o que está escrito.',
+      },
+      { text: 'Olhe apenas para a COR da fonte.' },
+      { text: 'Selecione o botão que nomeia a COR correta.' },
+    ],
   },
   {
     id: 'shape-stack',
@@ -109,10 +122,12 @@ export const PUZZLES: PuzzleConfig[] = [
     description: 'Determine se as formas rotacionadas são idênticas.',
     icon: 'RotateCw',
     tutorial: [
-      { text: "Duas grades com padrões de blocos aparecerão lado a lado." },
-      { text: "A grade da direita pode estar rotacionada em 90°, 180° ou 270°." },
-      { text: "Decida se o padrão de blocos é EXATAMENTE o mesmo ou não." }
-    ]
+      { text: 'Duas grades com padrões de blocos aparecerão lado a lado.' },
+      {
+        text: 'A grade da direita pode estar rotacionada em 90°, 180° ou 270°.',
+      },
+      { text: 'Decida se o padrão de blocos é EXATAMENTE o mesmo ou não.' },
+    ],
   },
   {
     id: 'pattern-pursuit',
@@ -121,21 +136,22 @@ export const PUZZLES: PuzzleConfig[] = [
     description: 'Encontre o ícone intruso na grade o mais rápido possível.',
     icon: 'Search',
     tutorial: [
-      { text: "Uma grade de ícones aparecerá na tela." },
-      { text: "Todos os ícones são iguais, EXCETO UM." },
-      { text: "Clique no ícone diferente para avançar e ganhar pontos." }
-    ]
+      { text: 'Uma grade de ícones aparecerá na tela.' },
+      { text: 'Todos os ícones são iguais, EXCETO UM.' },
+      { text: 'Clique no ícone diferente para avançar e ganhar pontos.' },
+    ],
   },
   {
     id: 'neural-react',
     name: 'Neural React',
     category: 'Reaction',
-    description: 'Teste sua velocidade de reação. Clique assim que a cor mudar!',
+    description:
+      'Teste sua velocidade de reação. Clique assim que a cor mudar!',
     icon: 'Zap',
     tutorial: [
-      { text: "Aguarde a tela ficar VERDE." },
-      { text: "Assim que a cor mudar, CLIQUE o mais rápido que puder." },
-      { text: "Tente bater seu recorde de milissegundos!" }
-    ]
+      { text: 'Aguarde a tela ficar VERDE.' },
+      { text: 'Assim que a cor mudar, CLIQUE o mais rápido que puder.' },
+      { text: 'Tente bater seu recorde de milissegundos!' },
+    ],
   },
 ];

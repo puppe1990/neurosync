@@ -24,19 +24,32 @@ const COLORS = [
 ];
 
 export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
-  const [currentChallenge, setCurrentChallenge] = useState<{ text: string, colorHex: string, correctId: string } | null>(null);
+  const [currentChallenge, setCurrentChallenge] = useState<{
+    text: string;
+    colorHex: string;
+    correctId: string;
+  } | null>(null);
   const [score, setScore] = useState(0);
   const [mistakes, setMistakes] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(difficulty === 'EASY' ? 45 : (difficulty === 'HARD' ? 25 : (difficulty === 'CHAMPION' ? 15 : 30)));
+  const [timeLeft, setTimeLeft] = useState(
+    difficulty === 'EASY'
+      ? 45
+      : difficulty === 'HARD'
+        ? 25
+        : difficulty === 'CHAMPION'
+          ? 15
+          : 30,
+  );
   const [startTime] = useState(Date.now());
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
   const generateChallenge = useCallback(() => {
     let textIdx, colorIdx;
-    
+
     // Dynamic Difficulty: Less congruent entries as score increases
-    const performanceFactor = Math.min(0.8, score / 1500); 
-    const baseCongruentChance = difficulty === 'EASY' ? 0.6 : (difficulty === 'NORMAL' ? 0.3 : 0.1);
+    const performanceFactor = Math.min(0.8, score / 1500);
+    const baseCongruentChance =
+      difficulty === 'EASY' ? 0.6 : difficulty === 'NORMAL' ? 0.3 : 0.1;
     const congruentChance = baseCongruentChance * (1 - performanceFactor);
 
     if (Math.random() < congruentChance) {
@@ -44,7 +57,7 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
     } else {
       textIdx = Math.floor(Math.random() * COLORS.length);
       colorIdx = Math.floor(Math.random() * COLORS.length);
-      
+
       // Force incongruent if they happen to be same randomly
       if (textIdx === colorIdx) {
         colorIdx = (colorIdx + 1) % COLORS.length;
@@ -54,7 +67,7 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
     setCurrentChallenge({
       text: COLORS[textIdx].name,
       colorHex: COLORS[colorIdx].hex,
-      correctId: COLORS[colorIdx].id
+      correctId: COLORS[colorIdx].id,
     });
     setFeedback(null);
   }, [difficulty, score]);
@@ -67,12 +80,12 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
     if (timeLeft <= 0) {
       audio.playComplete();
       const totalAttemped = score / 10 + mistakes;
-      const accuracy = totalAttemped > 0 ? (score/10) / totalAttemped : 0;
+      const accuracy = totalAttemped > 0 ? score / 10 / totalAttemped : 0;
       onFinish(score, accuracy, Date.now() - startTime);
       return;
     }
     const timer = setInterval(() => {
-      setTimeLeft(t => {
+      setTimeLeft((t) => {
         if (t <= 5) audio.playTick();
         return t - 1;
       });
@@ -85,19 +98,21 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
 
     if (selectedId === currentChallenge.correctId) {
       audio.playCorrect();
-      setScore(s => s + 10);
+      setScore((s) => s + 10);
       setFeedback('correct');
       setTimeout(generateChallenge, 150);
     } else {
       audio.playWrong();
-      setMistakes(m => m + 1);
+      setMistakes((m) => m + 1);
       setFeedback('wrong');
       // On mistake, we wait a bit longer to show the correct one
       setTimeout(generateChallenge, 800);
     }
   };
 
-  const correctColorName = COLORS.find(c => c.id === currentChallenge?.correctId)?.name;
+  const correctColorName = COLORS.find(
+    (c) => c.id === currentChallenge?.correctId,
+  )?.name;
 
   return (
     <div className="flex flex-col items-center max-w-sm mx-auto">
@@ -109,7 +124,9 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
           </div>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-[10px] font-black opacity-40 uppercase tracking-widest italic">Pontos</span>
+          <span className="text-[10px] font-black opacity-40 uppercase tracking-widest italic">
+            Pontos
+          </span>
           <span className="font-black text-2xl text-brand-orange">{score}</span>
         </div>
       </div>
@@ -118,33 +135,35 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
         QUAL A COR DA FONTE?
       </div>
 
-      <motion.div 
+      <motion.div
         key={currentChallenge?.text}
         initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ 
-          scale: feedback === 'wrong' ? 1.05 : 1, 
+        animate={{
+          scale: feedback === 'wrong' ? 1.05 : 1,
           opacity: 1,
           x: feedback === 'wrong' ? [0, -10, 10, -10, 10, 0] : 0,
-          backgroundColor: feedback === 'wrong' ? '#fee2e2' : '#ffffff'
+          backgroundColor: feedback === 'wrong' ? '#fee2e2' : '#ffffff',
         }}
         className="bg-white border-4 border-black p-12 w-full text-center rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-10 overflow-hidden relative"
       >
         <AnimatePresence>
           {feedback === 'wrong' && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               className="absolute inset-0 flex items-center justify-center bg-brand-red text-white z-10"
             >
               <div className="text-center">
-                <p className="text-xs font-black uppercase tracking-widest mb-1">Deveria ser:</p>
+                <p className="text-xs font-black uppercase tracking-widest mb-1">
+                  Deveria ser:
+                </p>
                 <p className="text-3xl font-black">{correctColorName}</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-        <h2 
+        <h2
           className="text-5xl font-black uppercase tracking-tighter"
           style={{ color: currentChallenge?.colorHex }}
         >

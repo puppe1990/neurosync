@@ -1,4 +1,4 @@
-import {getCurrentUser} from '@/auth/current-user';
+import { getCurrentUser } from '@/auth/current-user';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,8 +6,8 @@ export async function GET() {
   const user = await getCurrentUser();
 
   if (!user) {
-    return Response.json({user: null}, {status: 401});
+    return Response.json({ user: null }, { status: 401 });
   }
 
-  return Response.json({user});
+  return Response.json({ user });
 }

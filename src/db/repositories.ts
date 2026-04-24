@@ -1,8 +1,8 @@
-import {createClient} from '@libsql/client';
-import {and, desc, eq, sql} from 'drizzle-orm';
-import {drizzle, type LibSQLDatabase} from 'drizzle-orm/libsql';
-import type {Difficulty, PuzzleCategory} from '@/types';
-import {gameResults, users, type GameResult, type User} from './schema';
+import { createClient } from '@libsql/client';
+import { and, desc, eq, sql } from 'drizzle-orm';
+import { drizzle, type LibSQLDatabase } from 'drizzle-orm/libsql';
+import type { Difficulty, PuzzleCategory } from '@/types';
+import { gameResults, users, type GameResult, type User } from './schema';
 import * as schema from './schema';
 
 export type Database = LibSQLDatabase<typeof schema>;
@@ -37,8 +37,8 @@ export interface RankingEntry {
 }
 
 export async function createTestDatabase() {
-  const client = createClient({url: 'file::memory:'});
-  const testDb = drizzle(client, {schema});
+  const client = createClient({ url: 'file::memory:' });
+  const testDb = drizzle(client, { schema });
 
   await testDb.run(sql`
     CREATE TABLE users (
@@ -67,7 +67,10 @@ export async function createTestDatabase() {
   return testDb;
 }
 
-export async function createUser(db: Database, input: CreateUserInput): Promise<User> {
+export async function createUser(
+  db: Database,
+  input: CreateUserInput,
+): Promise<User> {
   const now = new Date().toISOString();
   const email = normalizeEmail(input.email);
 
@@ -94,12 +97,22 @@ export async function createUser(db: Database, input: CreateUserInput): Promise<
   }
 }
 
-export async function findUserByEmail(db: Database, email: string): Promise<User | null> {
-  const [user] = await db.select().from(users).where(eq(users.email, normalizeEmail(email))).limit(1);
+export async function findUserByEmail(
+  db: Database,
+  email: string,
+): Promise<User | null> {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizeEmail(email)))
+    .limit(1);
   return user ?? null;
 }
 
-export async function findUserById(db: Database, id: string): Promise<User | null> {
+export async function findUserById(
+  db: Database,
+  id: string,
+): Promise<User | null> {
   const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
   return user ?? null;
 }
@@ -129,10 +142,12 @@ export async function createGameResult(
 
 export async function getRankings(
   db: Database,
-  options: {limit?: number; puzzleId?: string} = {},
+  options: { limit?: number; puzzleId?: string } = {},
 ): Promise<RankingEntry[]> {
   const limit = Math.max(1, Math.min(options.limit ?? 25, 100));
-  const filters = options.puzzleId ? eq(gameResults.puzzleId, options.puzzleId) : undefined;
+  const filters = options.puzzleId
+    ? eq(gameResults.puzzleId, options.puzzleId)
+    : undefined;
   const rows = await db
     .select({
       id: gameResults.id,

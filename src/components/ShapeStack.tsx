@@ -23,13 +23,23 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
   const [isSame, setIsSame] = useState(false);
   const [score, setScore] = useState(0);
   const [mistakes, setMistakes] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(difficulty === 'EASY' ? 45 : (difficulty === 'HARD' ? 25 : (difficulty === 'CHAMPION' ? 20 : 30)));
+  const [timeLeft, setTimeLeft] = useState(
+    difficulty === 'EASY'
+      ? 45
+      : difficulty === 'HARD'
+        ? 25
+        : difficulty === 'CHAMPION'
+          ? 20
+          : 30,
+  );
   const [startTime] = useState(Date.now());
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
   const rotateGrid = (grid: Grid): Grid => {
     const size = grid.length;
-    const newGrid = Array(size).fill(0).map(() => Array(size).fill(false));
+    const newGrid = Array(size)
+      .fill(0)
+      .map(() => Array(size).fill(false));
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
         newGrid[c][size - 1 - r] = grid[r][c];
@@ -50,13 +60,27 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
   const generateChallenge = useCallback(() => {
     // Dynamic difficulty factor based on score
     const dynamicFactor = Math.floor(score / 150);
-    
-    const size = (difficulty === 'EASY' && dynamicFactor < 4) ? 3 : (difficulty === 'CHAMPION' || dynamicFactor >= 4 ? 4 : 3);
-    const grid: Grid = Array(size).fill(0).map(() => Array(size).fill(false));
-    
-    const baseBlocks = difficulty === 'EASY' ? 3 : (difficulty === 'NORMAL' ? 4 : (difficulty === 'HARD' ? 5 : 6));
+
+    const size =
+      difficulty === 'EASY' && dynamicFactor < 4
+        ? 3
+        : difficulty === 'CHAMPION' || dynamicFactor >= 4
+          ? 4
+          : 3;
+    const grid: Grid = Array(size)
+      .fill(0)
+      .map(() => Array(size).fill(false));
+
+    const baseBlocks =
+      difficulty === 'EASY'
+        ? 3
+        : difficulty === 'NORMAL'
+          ? 4
+          : difficulty === 'HARD'
+            ? 5
+            : 6;
     const blockCount = Math.min(size * size - 1, baseBlocks + dynamicFactor);
-    
+
     let placed = 0;
     while (placed < blockCount) {
       const r = Math.floor(Math.random() * size);
@@ -78,19 +102,19 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
       }
     } else {
       // Modify one block
-      compare = grid.map(row => [...row]);
+      compare = grid.map((row) => [...row]);
       let r = Math.floor(Math.random() * size);
       let c = Math.floor(Math.random() * size);
       compare[r][c] = !compare[r][c];
-      
+
       // Ensure it's actually different from all rotations
       let temp = grid;
       let actuallySame = false;
-      for(let i=0; i<4; i++) {
-        if(gridsMatch(temp, compare)) actuallySame = true;
+      for (let i = 0; i < 4; i++) {
+        if (gridsMatch(temp, compare)) actuallySame = true;
         temp = rotateGrid(temp);
       }
-      if(actuallySame) {
+      if (actuallySame) {
         generateChallenge();
         return;
       }
@@ -110,12 +134,12 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
     if (timeLeft <= 0) {
       audio.playComplete();
       const totalAttemped = score / 15 + mistakes;
-      const accuracy = totalAttemped > 0 ? (score / 15) / totalAttemped : 0;
+      const accuracy = totalAttemped > 0 ? score / 15 / totalAttemped : 0;
       onFinish(score, accuracy, Date.now() - startTime);
       return;
     }
     const timer = setInterval(() => {
-      setTimeLeft(t => {
+      setTimeLeft((t) => {
         if (t <= 5) audio.playTick();
         return t - 1;
       });
@@ -128,29 +152,29 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
 
     if (answer === isSame) {
       audio.playCorrect();
-      setScore(s => s + 15);
+      setScore((s) => s + 15);
       setFeedback('correct');
       setTimeout(generateChallenge, 200);
     } else {
       audio.playWrong();
-      setMistakes(m => m + 1);
+      setMistakes((m) => m + 1);
       setFeedback('wrong');
       setTimeout(() => setFeedback(null), 300);
     }
   };
 
   const renderGrid = (grid: Grid) => (
-    <div 
+    <div
       className="grid gap-1 bg-black p-1 rounded-lg"
       style={{ gridTemplateColumns: `repeat(${grid.length}, minmax(0, 1fr))` }}
     >
-      {grid.map((row, r) => 
+      {grid.map((row, r) =>
         row.map((cell, c) => (
-          <div 
+          <div
             key={`${r}-${c}`}
             className={`w-6 h-6 rounded-sm ${cell ? 'bg-brand-blue' : 'bg-gray-800'}`}
           />
-        ))
+        )),
       )}
     </div>
   );
@@ -165,7 +189,9 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
           </div>
         </div>
         <div className="flex flex-col items-end">
-          <span className="text-[10px] font-black opacity-40 uppercase tracking-widest italic">Pontos</span>
+          <span className="text-[10px] font-black opacity-40 uppercase tracking-widest italic">
+            Pontos
+          </span>
           <span className="font-black text-2xl text-brand-green">{score}</span>
         </div>
       </div>
@@ -175,16 +201,18 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
       </div>
 
       <div className="flex justify-around items-center w-full mb-10 gap-4">
-        <motion.div 
-          key="target" 
+        <motion.div
+          key="target"
           className="p-4 bg-white border-4 border-black rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
         >
           {renderGrid(targetGrid)}
         </motion.div>
 
-        <div className="text-2xl font-black text-brand-orange animate-pulse">?</div>
+        <div className="text-2xl font-black text-brand-orange animate-pulse">
+          ?
+        </div>
 
-        <motion.div 
+        <motion.div
           key="compare"
           animate={{ x: feedback === 'wrong' ? [0, -5, 5, -5, 5, 0] : 0 }}
           className="p-4 bg-white border-4 border-black rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
@@ -210,7 +238,7 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
 
       <AnimatePresence>
         {feedback === 'wrong' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}

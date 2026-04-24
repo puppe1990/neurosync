@@ -1,6 +1,6 @@
-import {beforeEach, describe, expect, test} from 'vitest';
-import {createTestDatabase, findUserByEmail} from '@/db/repositories';
-import {signInWithPassword, signUpWithPassword} from './service';
+import { beforeEach, describe, expect, test } from 'vitest';
+import { createTestDatabase, findUserByEmail } from '@/db/repositories';
+import { signInWithPassword, signUpWithPassword } from './service';
 
 let db: Awaited<ReturnType<typeof createTestDatabase>>;
 

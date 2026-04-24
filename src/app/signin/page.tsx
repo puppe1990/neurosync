@@ -1,6 +1,6 @@
-import {redirect} from 'next/navigation';
-import {signInAction} from '@/app/actions/auth';
-import {getCurrentUser} from '@/auth/current-user';
+import { redirect } from 'next/navigation';
+import { signInAction } from '@/app/actions/auth';
+import { getCurrentUser } from '@/auth/current-user';
 import AuthForm from '@/components/AuthForm';
 import AuthShell from '@/components/AuthShell';
 

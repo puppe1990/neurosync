@@ -1,7 +1,7 @@
 import 'server-only';
 
-import {createClient} from '@libsql/client';
-import {drizzle} from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client';
+import { drizzle } from 'drizzle-orm/libsql';
 import * as schema from './schema';
 
 const url = process.env.TURSO_DATABASE_URL ?? 'file:./.neurosync-local.db';
@@ -12,7 +12,7 @@ export const db = drizzle(
     url,
     authToken,
   }),
-  {schema},
+  { schema },
 );
 
 export type AppDatabase = typeof db;

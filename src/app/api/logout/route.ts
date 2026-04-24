@@ -1,8 +1,8 @@
-import {deleteSession} from '@/auth/session';
+import { deleteSession } from '@/auth/session';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST() {
   await deleteSession();
-  return Response.json({ok: true});
+  return Response.json({ ok: true });
 }

@@ -17,13 +17,21 @@ interface MathRushProps {
   seed?: number;
 }
 
-export default function MathRush({ difficulty, onFinish, isDaily, seed }: MathRushProps) {
-  const [question, setQuestion] = useState<{ text: string; answer: number } | null>(null);
+export default function MathRush({
+  difficulty,
+  onFinish,
+  isDaily,
+  seed,
+}: MathRushProps) {
+  const [question, setQuestion] = useState<{
+    text: string;
+    answer: number;
+  } | null>(null);
   const [userInput, setUserInput] = useState('');
   const [solvedCount, setSolvedCount] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [streak, setStreak] = useState(0);
-  
+
   // Seeded random state
   const seedRef = useRef(seed || 0);
   const seededRandom = useCallback(() => {
@@ -45,28 +53,36 @@ export default function MathRush({ difficulty, onFinish, isDaily, seed }: MathRu
 
   const generateQuestion = useCallback(() => {
     const ops = ['+', '-'];
-    
+
     // Dynamic Level: Performance-based difficulty modifier
     const dynamicLevel = Math.floor(streak / 5) + Math.floor(solvedCount / 10);
-    
+
     // Unlock multiplication on EASY/NORMAL if performing well
     if (difficulty !== 'EASY' || dynamicLevel > 1) ops.push('*');
-    
+
     const rng = seed ? seededRandom : Math.random;
     const op = ops[Math.floor(rng() * ops.length)];
     let a, b;
 
     if (op === '*') {
-      const baseMax = difficulty === 'CHAMPION' ? 15 : (difficulty === 'HARD' ? 12 : 9);
+      const baseMax =
+        difficulty === 'CHAMPION' ? 15 : difficulty === 'HARD' ? 12 : 9;
       const dynamicMax = baseMax + dynamicLevel;
       a = Math.floor(rng() * dynamicMax) + 1;
-      b = Math.floor(rng() * (difficulty === 'EASY' ? 5 + dynamicLevel : 10 + Math.floor(dynamicLevel/2))) + 1;
+      b =
+        Math.floor(
+          rng() *
+            (difficulty === 'EASY'
+              ? 5 + dynamicLevel
+              : 10 + Math.floor(dynamicLevel / 2)),
+        ) + 1;
     } else {
-      const baseMax = difficulty === 'EASY' ? 20 : (difficulty === 'NORMAL' ? 50 : 100);
-      const dynamicMax = baseMax + (dynamicLevel * 10);
+      const baseMax =
+        difficulty === 'EASY' ? 20 : difficulty === 'NORMAL' ? 50 : 100;
+      const dynamicMax = baseMax + dynamicLevel * 10;
       a = Math.floor(rng() * dynamicMax) + 1;
       b = Math.floor(rng() * dynamicMax) + 1;
-      if (op === '-' && b > a) [a, b] = [b, a]; 
+      if (op === '-' && b > a) [a, b] = [b, a];
     }
 
     const text = `${a} ${op === '*' ? '×' : op} ${b}`;
@@ -94,7 +110,7 @@ export default function MathRush({ difficulty, onFinish, isDaily, seed }: MathRu
     }
 
     const timer = setInterval(() => {
-      setTimeLeft(t => {
+      setTimeLeft((t) => {
         if (t <= 5) audio.playTick();
         return t - 1;
       });
@@ -108,20 +124,25 @@ export default function MathRush({ difficulty, onFinish, isDaily, seed }: MathRu
 
     if (parseInt(val) === question.answer) {
       audio.playCorrect();
-      setSolvedCount(s => s + 1);
-      setStreak(s => s + 1);
+      setSolvedCount((s) => s + 1);
+      setStreak((s) => s + 1);
       generateQuestion();
     } else {
       setUserInput(val);
-      if (val.length >= question.answer.toString().length || (val.length > 0 && !question.answer.toString().startsWith(val) && val !== '-')) {
-         setTimeout(() => {
-           if (parseInt(val) !== question.answer) {
-             audio.playWrong();
-             setUserInput('');
-             setMistakes(m => m + 1);
-             setStreak(0);
-           }
-         }, 150);
+      if (
+        val.length >= question.answer.toString().length ||
+        (val.length > 0 &&
+          !question.answer.toString().startsWith(val) &&
+          val !== '-')
+      ) {
+        setTimeout(() => {
+          if (parseInt(val) !== question.answer) {
+            audio.playWrong();
+            setUserInput('');
+            setMistakes((m) => m + 1);
+            setStreak(0);
+          }
+        }, 150);
       }
     }
   };
@@ -151,15 +172,19 @@ export default function MathRush({ difficulty, onFinish, isDaily, seed }: MathRu
         </div>
       </div>
 
-      <motion.div 
+      <motion.div
         key={question?.text}
         initial={{ scale: 0.8, rotate: -2 }}
         animate={{ scale: 1, rotate: 0 }}
         className="bg-white border-4 border-black p-10 w-full text-center rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-10 relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-20 h-20 bg-brand-gold/20 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <span className="text-xs font-black tracking-[0.3em] text-gray-400 mb-2 block uppercase italic">Mental Math</span>
-        <h2 className="text-6xl font-black tabular-nums tracking-tighter text-gray-900">{question?.text}</h2>
+        <span className="text-xs font-black tracking-[0.3em] text-gray-400 mb-2 block uppercase italic">
+          Mental Math
+        </span>
+        <h2 className="text-6xl font-black tabular-nums tracking-tighter text-gray-900">
+          {question?.text}
+        </h2>
       </motion.div>
 
       <div className="grid grid-cols-3 gap-3 w-full">
@@ -167,9 +192,10 @@ export default function MathRush({ difficulty, onFinish, isDaily, seed }: MathRu
           <button
             key={btn}
             onClick={() => {
-               if (btn === 'CLR') setUserInput('');
-               else if (btn === '-') setUserInput(prev => prev === '' ? '-' : prev);
-               else handleInput(userInput + btn);
+              if (btn === 'CLR') setUserInput('');
+              else if (btn === '-')
+                setUserInput((prev) => (prev === '' ? '-' : prev));
+              else handleInput(userInput + btn);
             }}
             className={`
               p-4 border-4 border-black rounded-xl font-black text-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[2px] active:shadow-none

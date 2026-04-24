@@ -1,8 +1,8 @@
-import {z} from 'zod';
-import type {Database} from '@/db/repositories';
-import {createUser, findUserByEmail} from '@/db/repositories';
-import type {User} from '@/db/schema';
-import {hashPassword, verifyPassword} from './password';
+import { z } from 'zod';
+import type { Database } from '@/db/repositories';
+import { createUser, findUserByEmail } from '@/db/repositories';
+import type { User } from '@/db/schema';
+import { hashPassword, verifyPassword } from './password';
 
 const signUpSchema = z.object({
   name: z.string().trim().min(2, 'Name must have at least 2 characters'),

@@ -1,6 +1,6 @@
-import {getSession} from '@/auth/session';
-import {db} from '@/db/client';
-import {getRankings} from '@/db/repositories';
+import { getSession } from '@/auth/session';
+import { db } from '@/db/client';
+import { getRankings } from '@/db/repositories';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,16 +8,16 @@ export async function GET(request: Request) {
   const session = await getSession();
 
   if (!session?.userId) {
-    return Response.json({message: 'Unauthorized'}, {status: 401});
+    return Response.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   const url = new URL(request.url);
   const puzzleId = url.searchParams.get('puzzleId') || undefined;
   const limit = Number(url.searchParams.get('limit') ?? 25);
-  const rankings = await getRankings(db, {puzzleId, limit});
+  const rankings = await getRankings(db, { puzzleId, limit });
 
   return Response.json(
-    {rankings},
+    { rankings },
     {
       headers: {
         'Cache-Control': 'no-store',

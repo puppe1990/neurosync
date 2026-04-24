@@ -14,12 +14,32 @@ interface PatternPursuitProps {
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
 }
 
-const POSSIBLE_ICONS = ['Brain', 'Calculator', 'Grid3X3', 'Palette', 'RotateCw', 'Timer', 'Target', 'Zap', 'Search', 'History', 'Trophy', 'Settings', 'X', 'Check'];
+const POSSIBLE_ICONS = [
+  'Brain',
+  'Calculator',
+  'Grid3X3',
+  'Palette',
+  'RotateCw',
+  'Timer',
+  'Target',
+  'Zap',
+  'Search',
+  'History',
+  'Trophy',
+  'Settings',
+  'X',
+  'Check',
+];
 
-export default function PatternPursuit({ difficulty, onFinish }: PatternPursuitProps) {
+export default function PatternPursuit({
+  difficulty,
+  onFinish,
+}: PatternPursuitProps) {
   const [score, setScore] = useState(0);
   const [mistakes, setMistakes] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(difficulty === 'EASY' ? 60 : (difficulty === 'HARD' ? 30 : 45));
+  const [timeLeft, setTimeLeft] = useState(
+    difficulty === 'EASY' ? 60 : difficulty === 'HARD' ? 30 : 45,
+  );
   const [grid, setGrid] = useState<{ icon: string; isTarget: boolean }[]>([]);
   const [startTime] = useState(Date.now());
   const [level, setLevel] = useState(1);
@@ -40,10 +60,12 @@ export default function PatternPursuit({ difficulty, onFinish }: PatternPursuitP
     const targetIcon = icons[Math.floor(Math.random() * icons.length)];
 
     const targetPos = Math.floor(Math.random() * totalCells);
-    const newGrid = Array(totalCells).fill(null).map((_, i) => ({
-      icon: i === targetPos ? targetIcon : mainIcon,
-      isTarget: i === targetPos
-    }));
+    const newGrid = Array(totalCells)
+      .fill(null)
+      .map((_, i) => ({
+        icon: i === targetPos ? targetIcon : mainIcon,
+        isTarget: i === targetPos,
+      }));
 
     setGrid(newGrid);
   }, [gridSize]);
@@ -54,7 +76,7 @@ export default function PatternPursuit({ difficulty, onFinish }: PatternPursuitP
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
           return 0;
@@ -67,20 +89,24 @@ export default function PatternPursuit({ difficulty, onFinish }: PatternPursuitP
 
   useEffect(() => {
     if (timeLeft === 0) {
-      onFinish(score, score / (score + mistakes || 1) * 100, (Date.now() - startTime) / 1000);
+      onFinish(
+        score,
+        (score / (score + mistakes || 1)) * 100,
+        (Date.now() - startTime) / 1000,
+      );
     }
   }, [timeLeft, onFinish, score, mistakes, startTime]);
 
   const handleCellClick = (index: number) => {
     if (grid[index].isTarget) {
       audio.playCorrect();
-      setScore(s => s + (10 * level));
-      setLevel(l => l + 1);
+      setScore((s) => s + 10 * level);
+      setLevel((l) => l + 1);
       generateGrid();
     } else {
       audio.playWrong();
-      setMistakes(m => m + 1);
-      setScore(s => Math.max(0, s - 5));
+      setMistakes((m) => m + 1);
+      setScore((s) => Math.max(0, s - 5));
       // Visual shake or feedback could be added here
     }
   };
@@ -97,12 +123,14 @@ export default function PatternPursuit({ difficulty, onFinish }: PatternPursuitP
         <div className="bg-brand-orange border-4 border-black px-4 py-2 rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <div className="flex items-center gap-2">
             <IconMap.Trophy size={14} className="text-white" />
-            <span className="font-black text-xl text-white italic">SCORE: {score}</span>
+            <span className="font-black text-xl text-white italic">
+              SCORE: {score}
+            </span>
           </div>
         </div>
       </div>
 
-      <div 
+      <div
         className="grid gap-3 w-full aspect-square bg-gray-100 p-4 border-4 border-black rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
         style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
       >

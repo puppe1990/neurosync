@@ -1,4 +1,4 @@
-import {beforeEach, describe, expect, test} from 'vitest';
+import { beforeEach, describe, expect, test } from 'vitest';
 import {
   createGameResult,
   createTestDatabase,
@@ -97,7 +97,7 @@ describe('game result repository', () => {
       timeSpent: 41000,
     });
 
-    const rankings = await getRankings(db, {limit: 10});
+    const rankings = await getRankings(db, { limit: 10 });
 
     expect(rankings.map((entry) => entry.playerName)).toEqual([
       'Grace Hopper',

@@ -1,4 +1,4 @@
-import {integer, real, sqliteTable, text} from 'drizzle-orm/sqlite-core';
+import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
@@ -13,7 +13,7 @@ export const gameResults = sqliteTable('game_results', {
   id: text('id').primaryKey(),
   userId: text('user_id')
     .notNull()
-    .references(() => users.id, {onDelete: 'cascade'}),
+    .references(() => users.id, { onDelete: 'cascade' }),
   puzzleId: text('puzzle_id').notNull(),
   category: text('category').notNull(),
   difficulty: text('difficulty').notNull(),

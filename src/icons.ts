@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { 
-  Calculator, 
-  Grid3X3, 
-  Palette, 
-  RotateCw, 
-  Brain, 
-  History, 
-  Trophy, 
+import {
+  Calculator,
+  Grid3X3,
+  Palette,
+  RotateCw,
+  Brain,
+  History,
+  Trophy,
   Settings,
   X,
   Check,
@@ -23,7 +23,7 @@ import {
   VolumeX,
   Zap,
   Search,
-  LogOut
+  LogOut,
 } from 'lucide-react';
 
 export const IconMap = {
@@ -46,7 +46,7 @@ export const IconMap = {
   VolumeX,
   Zap,
   Search,
-  LogOut
+  LogOut,
 };
 
 export type IconName = keyof typeof IconMap;

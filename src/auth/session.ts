@@ -1,7 +1,7 @@
 import 'server-only';
 
-import {SignJWT, jwtVerify} from 'jose';
-import {cookies} from 'next/headers';
+import { SignJWT, jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
 
 const SESSION_COOKIE = 'neurosync_session';
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -41,24 +41,29 @@ export async function getSession(): Promise<SessionPayload | null> {
 }
 
 export async function encryptSession(payload: SessionPayload) {
-  return new SignJWT({...payload})
-    .setProtectedHeader({alg: 'HS256'})
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
     .sign(getEncodedSecret());
 }
 
-export async function decryptSession(session?: string): Promise<SessionPayload | null> {
+export async function decryptSession(
+  session?: string,
+): Promise<SessionPayload | null> {
   if (!session) {
     return null;
   }
 
   try {
-    const {payload} = await jwtVerify(session, getEncodedSecret(), {
+    const { payload } = await jwtVerify(session, getEncodedSecret(), {
       algorithms: ['HS256'],
     });
 
-    if (typeof payload.userId !== 'string' || typeof payload.expiresAt !== 'string') {
+    if (
+      typeof payload.userId !== 'string' ||
+      typeof payload.expiresAt !== 'string'
+    ) {
       return null;
     }
 
