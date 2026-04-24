@@ -8,6 +8,8 @@ import { motion } from 'motion/react';
 import { IconMap } from '../icons';
 import { Difficulty } from '../types';
 
+import { audio } from '../lib/audio';
+
 interface MathRushProps {
   difficulty: Difficulty;
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
@@ -63,6 +65,7 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
 
   useEffect(() => {
     if (timeLeft <= 0) {
+      audio.playComplete();
       const timeSpent = Date.now() - startTime;
       const totalAttempted = solvedCount + mistakes;
       const accuracy = totalAttempted > 0 ? solvedCount / totalAttempted : 0;
@@ -71,7 +74,10 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
     }
 
     const timer = setInterval(() => {
-      setTimeLeft(t => t - 1);
+      setTimeLeft(t => {
+        if (t <= 5) audio.playTick();
+        return t - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
@@ -81,6 +87,7 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
     if (!question) return;
 
     if (parseInt(val) === question.answer) {
+      audio.playCorrect();
       setSolvedCount(s => s + 1);
       generateQuestion();
     } else {
@@ -90,6 +97,7 @@ export default function MathRush({ difficulty, onFinish }: MathRushProps) {
          // Brief delay then clear if wrong
          setTimeout(() => {
            if (parseInt(val) !== question.answer) {
+             audio.playWrong();
              setUserInput('');
              setMistakes(m => m + 1);
            }

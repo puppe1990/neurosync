@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { IconMap } from '../icons';
 import { Difficulty } from '../types';
 
+import { audio } from '../lib/audio';
+
 interface StroopTestProps {
   difficulty: Difficulty;
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
@@ -65,29 +67,39 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
 
   useEffect(() => {
     if (timeLeft <= 0) {
+      audio.playComplete();
       const totalAttemped = score / 10 + mistakes;
       const accuracy = totalAttemped > 0 ? (score/10) / totalAttemped : 0;
       onFinish(score, accuracy, Date.now() - startTime);
       return;
     }
-    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 5) audio.playTick();
+        return t - 1;
+      });
+    }, 1000);
     return () => clearInterval(timer);
   }, [timeLeft, onFinish, score, mistakes, startTime]);
 
   const handleSelection = (selectedId: string) => {
-    if (!currentChallenge) return;
+    if (!currentChallenge || feedback) return;
 
     if (selectedId === currentChallenge.correctId) {
+      audio.playCorrect();
       setScore(s => s + 10);
       setFeedback('correct');
       setTimeout(generateChallenge, 150);
     } else {
+      audio.playWrong();
       setMistakes(m => m + 1);
       setFeedback('wrong');
-      // Shake effect or feedback?
-      setTimeout(() => setFeedback(null), 300);
+      // On mistake, we wait a bit longer to show the correct one
+      setTimeout(generateChallenge, 800);
     }
   };
+
+  const correctColorName = COLORS.find(c => c.id === currentChallenge?.correctId)?.name;
 
   return (
     <div className="flex flex-col items-center max-w-sm mx-auto">
@@ -112,12 +124,28 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
         key={currentChallenge?.text}
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ 
-          scale: 1, 
+          scale: feedback === 'wrong' ? 1.05 : 1, 
           opacity: 1,
-          x: feedback === 'wrong' ? [0, -10, 10, -10, 10, 0] : 0 
+          x: feedback === 'wrong' ? [0, -10, 10, -10, 10, 0] : 0,
+          backgroundColor: feedback === 'wrong' ? '#fee2e2' : '#ffffff'
         }}
-        className="bg-white border-4 border-black p-12 w-full text-center rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-10 overflow-hidden"
+        className="bg-white border-4 border-black p-12 w-full text-center rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-10 overflow-hidden relative"
       >
+        <AnimatePresence>
+          {feedback === 'wrong' && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center bg-brand-red text-white z-10"
+            >
+              <div className="text-center">
+                <p className="text-xs font-black uppercase tracking-widest mb-1">Deveria ser:</p>
+                <p className="text-3xl font-black">{correctColorName}</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <h2 
           className="text-5xl font-black uppercase tracking-tighter"
           style={{ color: currentChallenge?.colorHex }}
@@ -131,26 +159,17 @@ export default function StroopTest({ difficulty, onFinish }: StroopTestProps) {
           <button
             key={color.id}
             onClick={() => handleSelection(color.id)}
-            className="p-4 bg-white border-4 border-black rounded-xl font-black text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-[2px] active:shadow-none uppercase"
+            disabled={feedback === 'wrong'}
+            className={`
+              p-4 border-4 border-black rounded-xl font-black text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all uppercase
+              ${feedback === 'wrong' && color.id === currentChallenge?.correctId ? 'bg-brand-green translate-y-[-4px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]'}
+              active:translate-y-[2px] active:shadow-none
+              disabled:cursor-not-allowed
+            `}
           >
             {color.name}
           </button>
         ))}
-      </div>
-
-      <div className="mt-8 flex gap-2">
-        <AnimatePresence>
-          {feedback === 'wrong' && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="text-brand-red font-black text-xs uppercase italic"
-            >
-              Foque na Cor!
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );

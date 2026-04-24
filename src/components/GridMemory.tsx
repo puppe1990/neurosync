@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { IconMap } from '../icons';
 import { Difficulty } from '../types';
 
+import { audio } from '../lib/audio';
+
 interface GridMemoryProps {
   difficulty: Difficulty;
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
@@ -53,10 +55,16 @@ export default function GridMemory({ difficulty, onFinish }: GridMemoryProps) {
 
   useEffect(() => {
     if (timeLeft <= 0) {
+      audio.playComplete();
       onFinish(score, score / (level * 5), Date.now() - startTime);
       return;
     }
-    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 5) audio.playTick();
+        return t - 1;
+      });
+    }, 1000);
     return () => clearInterval(timer);
   }, [timeLeft, onFinish, score, level, startTime]);
 
@@ -64,6 +72,7 @@ export default function GridMemory({ difficulty, onFinish }: GridMemoryProps) {
     if (gameState !== 'PLAY' || userSelection.includes(idx)) return;
 
     if (sequence.includes(idx)) {
+      audio.playCorrect();
       const nextSelection = [...userSelection, idx];
       setUserSelection(nextSelection);
       
@@ -74,6 +83,7 @@ export default function GridMemory({ difficulty, onFinish }: GridMemoryProps) {
       }
     } else {
       // Mistake
+      audio.playWrong();
       setGameState('FEEDBACK');
       setTimeout(() => {
         setLevel(l => Math.max(1, l - 1));

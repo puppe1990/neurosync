@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { IconMap } from '../icons';
 import { Difficulty } from '../types';
 
+import { audio } from '../lib/audio';
+
 interface ShapeStackProps {
   difficulty: Difficulty;
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
@@ -103,21 +105,31 @@ export default function ShapeStack({ difficulty, onFinish }: ShapeStackProps) {
 
   useEffect(() => {
     if (timeLeft <= 0) {
+      audio.playComplete();
       const totalAttemped = score / 15 + mistakes;
       const accuracy = totalAttemped > 0 ? (score / 15) / totalAttemped : 0;
       onFinish(score, accuracy, Date.now() - startTime);
       return;
     }
-    const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    const timer = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 5) audio.playTick();
+        return t - 1;
+      });
+    }, 1000);
     return () => clearInterval(timer);
   }, [timeLeft, onFinish, score, mistakes, startTime]);
 
   const handleAnswer = (answer: boolean) => {
+    if (feedback) return;
+
     if (answer === isSame) {
+      audio.playCorrect();
       setScore(s => s + 15);
       setFeedback('correct');
       setTimeout(generateChallenge, 200);
     } else {
+      audio.playWrong();
       setMistakes(m => m + 1);
       setFeedback('wrong');
       setTimeout(() => setFeedback(null), 300);
