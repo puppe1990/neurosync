@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type PuzzleCategory = 'Arithmetic' | 'Memory' | 'Logic' | 'Spatial';
+export type PuzzleCategory = 'Arithmetic' | 'Memory' | 'Logic' | 'Spatial' | 'Visual' | 'Reaction';
 export type Difficulty = 'EASY' | 'NORMAL' | 'HARD' | 'CHAMPION';
 
 export interface PuzzleResult {
