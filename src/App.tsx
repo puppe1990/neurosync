@@ -6,9 +6,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconMap } from './icons';
-import { PUZZLES, PuzzleConfig, UserStats, PuzzleResult } from './types.ts';
+import { PUZZLES, PuzzleConfig, UserStats, PuzzleResult, Difficulty } from './types.ts';
 import MathRush from './components/MathRush';
 import GridMemory from './components/GridMemory';
+import StroopTest from './components/StroopTest';
+import ShapeStack from './components/ShapeStack';
 
 // Views
 type View = 'MENU' | 'TRAINING' | 'STATS' | 'PUZZLE_DETAIL' | 'RESULTS';
@@ -16,6 +18,7 @@ type View = 'MENU' | 'TRAINING' | 'STATS' | 'PUZZLE_DETAIL' | 'RESULTS';
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('MENU');
   const [selectedPuzzle, setSelectedPuzzle] = useState<PuzzleConfig | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('NORMAL');
   const [lastResult, setLastResult] = useState<PuzzleResult | null>(null);
   const [stats, setStats] = useState<UserStats>(() => {
     const saved = localStorage.getItem('neurosync_stats');
@@ -32,6 +35,7 @@ export default function App() {
     const result: PuzzleResult = {
       puzzleId: selectedPuzzle.id,
       category: selectedPuzzle.category,
+      difficulty: selectedDifficulty,
       score,
       timeSpent,
       accuracy,
@@ -204,16 +208,35 @@ export default function App() {
                     </div>
                     <div className="p-5 bg-brand-green/20 border-4 border-black rounded-2xl">
                       <span className="block text-[10px] font-black uppercase opacity-50 mb-1">Status</span>
-                      <span className="text-xl font-black">HABILITADO</span>
+                      <span className="text-xl font-black uppercase">{selectedDifficulty}</span>
+                    </div>
+                  </div>
+
+                  <div className="mb-8">
+                    <span className="block text-[10px] font-black uppercase opacity-50 mb-3">Nível de Intensidade</span>
+                    <div className="grid grid-cols-4 gap-2">
+                      {(['EASY', 'NORMAL', 'HARD', 'CHAMPION'] as Difficulty[]).map((d) => (
+                        <button
+                          key={d}
+                          onClick={() => setSelectedDifficulty(d)}
+                          className={`py-2 px-1 border-4 border-black rounded-xl font-black text-[10px] transition-all ${
+                            selectedDifficulty === d 
+                              ? 'bg-brand-blue text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5' 
+                              : 'bg-white hover:bg-brand-yellow'
+                          }`}
+                        >
+                          {d}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   <button 
-                    disabled={!['math-rush', 'grid-memory'].includes(selectedPuzzle.id)}
+                    disabled={!['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id)}
                     className="w-full bg-brand-blue text-white border-4 border-black rounded-2xl py-6 font-black text-2xl tracking-widest uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     onClick={() => setCurrentView('TRAINING')}
                   >
-                    {['math-rush', 'grid-memory'].includes(selectedPuzzle.id) ? 'COMEÇAR TREINO' : 'CARREGANDO...'}
+                    {['math-rush', 'grid-memory', 'stroop-test', 'shape-stack'].includes(selectedPuzzle.id) ? 'COMEÇAR TREINO' : 'CARREGANDO...'}
                   </button>
                 </div>
              </motion.div>
@@ -228,8 +251,10 @@ export default function App() {
               className="w-full"
             >
               <div className="bg-white brutalist-card p-8 mb-4">
-                {selectedPuzzle.id === 'math-rush' && <MathRush onFinish={handleFinishPuzzle} />}
-                {selectedPuzzle.id === 'grid-memory' && <GridMemory onFinish={handleFinishPuzzle} />}
+                {selectedPuzzle.id === 'math-rush' && <MathRush difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
+                {selectedPuzzle.id === 'grid-memory' && <GridMemory difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
+                {selectedPuzzle.id === 'stroop-test' && <StroopTest difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
+                {selectedPuzzle.id === 'shape-stack' && <ShapeStack difficulty={selectedDifficulty} onFinish={handleFinishPuzzle} />}
               </div>
               <button 
                 onClick={() => setCurrentView('MENU')}

@@ -6,27 +6,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconMap } from '../icons';
+import { Difficulty } from '../types';
 
 interface GridMemoryProps {
+  difficulty: Difficulty;
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
 }
 
 type GameState = 'MEMORIZE' | 'PLAY' | 'FEEDBACK';
 
-export default function GridMemory({ onFinish }: GridMemoryProps) {
-  const [level, setLevel] = useState(1);
+export default function GridMemory({ difficulty, onFinish }: GridMemoryProps) {
+  const [level, setLevel] = useState(difficulty === 'EASY' ? 1 : (difficulty === 'HARD' ? 3 : (difficulty === 'CHAMPION' ? 5 : 2)));
   const [sequence, setSequence] = useState<number[]>([]);
   const [userSelection, setUserSelection] = useState<number[]>([]);
   const [gameState, setGameState] = useState<GameState>('MEMORIZE');
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(difficulty === 'EASY' ? 90 : (difficulty === 'HARD' ? 45 : (difficulty === 'CHAMPION' ? 30 : 60)));
   const [startTime] = useState(Date.now());
 
   const gridSize = 16; // 4x4
 
   const nextLevel = useCallback(() => {
     const newSequence: number[] = [];
-    const count = Math.min(3 + Math.floor(level / 2), 9);
+    let count = 3 + Math.floor(level / 2);
+    if (difficulty === 'HARD') count += 1;
+    if (difficulty === 'CHAMPION') count += 2;
+    count = Math.min(count, 12);
     
     while(newSequence.length < count) {
       const idx = Math.floor(Math.random() * gridSize);
@@ -40,7 +45,7 @@ export default function GridMemory({ onFinish }: GridMemoryProps) {
     setTimeout(() => {
       setGameState('PLAY');
     }, 2000 + (level * 100)); // Adaptive memorization time
-  }, [level]);
+  }, [level, difficulty]);
 
   useEffect(() => {
     nextLevel();

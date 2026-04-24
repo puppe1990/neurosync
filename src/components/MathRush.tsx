@@ -6,30 +6,45 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
 import { IconMap } from '../icons';
+import { Difficulty } from '../types';
 
 interface MathRushProps {
+  difficulty: Difficulty;
   onFinish: (score: number, accuracy: number, timeSpent: number) => void;
 }
 
-export default function MathRush({ onFinish }: MathRushProps) {
+export default function MathRush({ difficulty, onFinish }: MathRushProps) {
   const [question, setQuestion] = useState<{ text: string; answer: number } | null>(null);
   const [userInput, setUserInput] = useState('');
   const [solvedCount, setSolvedCount] = useState(0);
   const [mistakes, setMistakes] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+  
+  const getInitialTime = () => {
+    if (difficulty === 'EASY') return 45;
+    if (difficulty === 'HARD') return 25;
+    if (difficulty === 'CHAMPION') return 15;
+    return 30;
+  };
+
+  const [timeLeft, setTimeLeft] = useState(getInitialTime());
   const [startTime] = useState(Date.now());
 
   const generateQuestion = useCallback(() => {
-    const ops = ['+', '-', '*'];
+    const ops = ['+', '-'];
+    if (difficulty !== 'EASY') ops.push('*');
+    
     const op = ops[Math.floor(Math.random() * ops.length)];
     let a, b;
 
     if (op === '*') {
-      a = Math.floor(Math.random() * 12) + 1;
-      b = Math.floor(Math.random() * 10) + 1;
+      const max = difficulty === 'CHAMPION' ? 15 : (difficulty === 'HARD' ? 12 : 9);
+      a = Math.floor(Math.random() * max) + 1;
+      b = Math.floor(Math.random() * (difficulty === 'EASY' ? 5 : 10)) + 1;
     } else {
-      a = Math.floor(Math.random() * 50) + 1;
-      b = Math.floor(Math.random() * 50) + 1;
+      const max = difficulty === 'EASY' ? 20 : (difficulty === 'NORMAL' ? 50 : 100);
+      a = Math.floor(Math.random() * max) + 1;
+      b = Math.floor(Math.random() * max) + 1;
+      if (op === '-' && difficulty === 'EASY' && b > a) [a, b] = [b, a]; 
     }
 
     const text = `${a} ${op === '*' ? '×' : op} ${b}`;

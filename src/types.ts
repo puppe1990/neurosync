@@ -4,10 +4,12 @@
  */
 
 export type PuzzleCategory = 'Arithmetic' | 'Memory' | 'Logic' | 'Spatial';
+export type Difficulty = 'EASY' | 'NORMAL' | 'HARD' | 'CHAMPION';
 
 export interface PuzzleResult {
   puzzleId: string;
   category: PuzzleCategory;
+  difficulty: Difficulty;
   score: number;
   timeSpent: number; // in milliseconds
   accuracy: number; // 0 to 1
