@@ -1,20 +1,46 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# NeuroSync
 
-# Run and deploy your AI Studio app
+NeuroSync is a cognitive training app built with Next.js, React, Tailwind CSS, and Motion. It includes short interactive exercises for arithmetic speed, memory, color conflict, spatial reasoning, visual search, and reaction time.
 
-This contains everything you need to run your app locally.
+![NeuroSync home screen](docs/assets/neurosync-home.png)
 
-View your app in AI Studio: https://ai.studio/apps/552aabff-6cdd-40e2-bf3d-2ea78d136ec2
+## Features
+
+- Daily challenge flow with local streak tracking
+- Multiple puzzle modes with difficulty selection
+- Tutorial overlays for supported games
+- Local browser storage for scores and session history
+- Brutalist visual style with animated UI transitions
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Motion
+- Lucide React
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+**Prerequisite:** Node.js
 
+```bash
+npm install
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Open `http://localhost:3000`.
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
+
+## Notes
+
+Game progress is stored locally in the browser under `neurosync_stats`.
