@@ -30,6 +30,7 @@
   "app": {
     "profile": "Neuro profile",
     "player": "Player",
+    "streak": "Streak",
     "logout": "Sign out",
     "dailyChallengeEyebrow": "Today's challenge",
     "dailyChallengeTitle": "Neural Prime",
@@ -60,6 +61,7 @@
     "history": "Neural history",
     "waitingHistory": "Awaiting brain connection...",
     "rankings": "Neural leaderboard",
+    "topLimit": "Top 25",
     "syncingRankings": "Syncing leaderboard...",
     "noScores": "No synced scores yet.",
     "rank": "Rank",

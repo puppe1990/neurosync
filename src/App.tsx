@@ -246,7 +246,7 @@ export default function App({
                 {t('profile')}
               </p>
               <p className="text-xl font-black underline underline-offset-4 decoration-2">
-                STREAK: {stats.dailyStreak}
+                {t('streak')}: {stats.dailyStreak}
               </p>
             </button>
             <div className="hidden md:block w-1 h-10 bg-black"></div>
@@ -771,7 +771,7 @@ export default function App({
                   </h2>
                 </div>
                 <div className="bg-brand-gold border-4 border-black rounded-2xl px-5 py-3 font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  TOP 25
+                  {t('topLimit')}
                 </div>
               </div>
 

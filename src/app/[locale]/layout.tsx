@@ -1,7 +1,12 @@
 import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import {
+  getMessages as getRequestMessages,
+  setRequestLocale,
+} from 'next-intl/server';
 import { getMessages, hasLocale, locales } from '@/i18n/config';
+import '../../index.css';
 
 interface LocaleLayoutProps {
   children: React.ReactNode;
@@ -41,6 +46,15 @@ export default async function LocaleLayout({
   }
 
   setRequestLocale(locale);
+  const messages = await getRequestMessages();
 
-  return children;
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
 }
