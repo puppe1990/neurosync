@@ -1,7 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { db } from '@/db/client';
+import { db, ensureDatabaseReady } from '@/db/client';
 import { signInWithPassword, signUpWithPassword } from '@/auth/service';
 import { createSession, deleteSession } from '@/auth/session';
 
@@ -14,6 +14,7 @@ export async function signUpAction(
   formData: FormData,
 ): Promise<AuthFormState> {
   try {
+    await ensureDatabaseReady();
     const user = await signUpWithPassword(db, {
       name: String(formData.get('name') ?? ''),
       email: String(formData.get('email') ?? ''),
@@ -33,6 +34,7 @@ export async function signInAction(
   formData: FormData,
 ): Promise<AuthFormState> {
   try {
+    await ensureDatabaseReady();
     const user = await signInWithPassword(db, {
       email: String(formData.get('email') ?? ''),
       password: String(formData.get('password') ?? ''),

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { getSession } from '@/auth/session';
-import { db } from '@/db/client';
+import { db, ensureDatabaseReady } from '@/db/client';
 import { createGameResult } from '@/db/repositories';
 
 export const dynamic = 'force-dynamic';
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     );
   }
 
+  await ensureDatabaseReady();
   const result = await createGameResult(db, session.userId, parsed.data);
   return Response.json({ result }, { status: 201 });
 }
