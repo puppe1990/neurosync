@@ -4,7 +4,22 @@ import { useLocale, useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { locales, type AppLocale } from '@/i18n/config';
 
-type LocaleSwitcherPathname = '/' | '/signin' | '/signup';
+type LocaleSwitcherPathname =
+  | '/'
+  | '/history'
+  | '/profile'
+  | '/rankings'
+  | '/settings'
+  | '/signin'
+  | '/signup'
+  | {
+      pathname: '/games/[gameId]';
+      params: { gameId: string };
+    }
+  | {
+      pathname: '/games/[gameId]/play';
+      params: { gameId: string };
+    };
 
 function getLocaleSafePathname(
   pathname: string,
@@ -20,8 +35,30 @@ function getLocaleSafePathname(
     normalizedPathname = normalizedPathname.slice(localePrefix.length) || '/';
   }
 
+  const gameDetailMatch = normalizedPathname.match(/^\/games\/([^/]+)$/);
+
+  if (gameDetailMatch) {
+    return {
+      pathname: '/games/[gameId]',
+      params: { gameId: gameDetailMatch[1] },
+    };
+  }
+
+  const gamePlayMatch = normalizedPathname.match(/^\/games\/([^/]+)\/play$/);
+
+  if (gamePlayMatch) {
+    return {
+      pathname: '/games/[gameId]/play',
+      params: { gameId: gamePlayMatch[1] },
+    };
+  }
+
   if (
     normalizedPathname === '/' ||
+    normalizedPathname === '/history' ||
+    normalizedPathname === '/profile' ||
+    normalizedPathname === '/rankings' ||
+    normalizedPathname === '/settings' ||
     normalizedPathname === '/signin' ||
     normalizedPathname === '/signup'
   ) {

@@ -21,20 +21,18 @@ import MathRush from './components/MathRush';
 import GridMemory from './components/GridMemory';
 import StroopTest from './components/StroopTest';
 import ShapeStack from './components/ShapeStack';
-import TutorialOverlay from './components/TutorialOverlay';
 import PatternPursuit from './components/PatternPursuit';
 import NeuralReact from './components/NeuralReact';
 import { useRouter } from '@/i18n/navigation';
 import type { AppLocale } from '@/i18n/config';
+import {
+  readMusicPreference,
+  writeMusicPreference,
+} from '@/lib/client-preferences';
+import { readStoredUserStats, writeStoredUserStats } from '@/lib/user-stats';
 
 // Views
-type View =
-  | 'MENU'
-  | 'TRAINING'
-  | 'STATS'
-  | 'PUZZLE_DETAIL'
-  | 'RESULTS'
-  | 'RANKINGS';
+type View = 'MENU' | 'TRAINING' | 'STATS' | 'RESULTS' | 'RANKINGS';
 
 const puzzleMessageKeys = {
   'math-rush': 'mathRush',
@@ -65,15 +63,9 @@ export default function App({
   const [lastResult, setLastResult] = useState<PuzzleResult | null>(null);
   const [rankings, setRankings] = useState<RankingEntry[]>([]);
   const [rankingsLoading, setRankingsLoading] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [musicEnabled, setMusicEnabled] = useState(false);
+  const [musicEnabled, setMusicEnabled] = useState(readMusicPreference);
   const [isDailyChallenge, setIsDailyChallenge] = useState(false);
-  const [stats, setStats] = useState<UserStats>(() => {
-    const saved = localStorage.getItem('neurosync_stats');
-    return saved
-      ? JSON.parse(saved)
-      : { sessions: [], bestScores: {}, dailyStreak: 0 };
-  });
+  const [stats, setStats] = useState<UserStats>(readStoredUserStats);
 
   const getDailySeed = () => {
     const date = new Date();
@@ -100,8 +92,12 @@ export default function App({
   };
 
   useEffect(() => {
-    localStorage.setItem('neurosync_stats', JSON.stringify(stats));
+    writeStoredUserStats(stats);
   }, [stats]);
+
+  useEffect(() => {
+    writeMusicPreference(musicEnabled);
+  }, [musicEnabled]);
 
   useEffect(() => {
     if (currentView !== 'RANKINGS') return;
@@ -239,7 +235,7 @@ export default function App({
 
           <div className="flex items-center gap-6 bg-white border-4 border-black p-3 px-6 rounded-full shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <button
-              onClick={() => setCurrentView('STATS')}
+              onClick={() => router.push('/profile', { locale })}
               className={`text-right leading-none group transition-colors ${currentView === 'STATS' ? 'text-brand-orange' : ''}`}
             >
               <p className="text-[10px] font-black uppercase text-gray-500">
@@ -378,8 +374,13 @@ export default function App({
                         animate: { opacity: 1, y: 0, scale: 1 },
                       }}
                       onClick={() => {
-                        setSelectedPuzzle(puzzle);
-                        setCurrentView('PUZZLE_DETAIL');
+                        router.push(
+                          {
+                            pathname: '/games/[gameId]',
+                            params: { gameId: puzzle.id },
+                          },
+                          { locale },
+                        );
                       }}
                       className={`group cursor-pointer ${color} border-4 border-black p-6 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-4px] transition-transform`}
                     >
@@ -425,137 +426,6 @@ export default function App({
                   </button>
                 </motion.div>
               </div>
-            </motion.div>
-          )}
-
-          {currentView === 'PUZZLE_DETAIL' && selectedPuzzle && (
-            <motion.div
-              key="puzzle-detail"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="max-w-2xl mx-auto w-full"
-            >
-              <button
-                onClick={() => setCurrentView('MENU')}
-                className="brutalist-button mb-8 inline-flex items-center gap-2"
-              >
-                <IconMap.ChevronLeft size={14} />
-                <span>{t('back')}</span>
-              </button>
-
-              <div className="bg-white brutalist-card p-8">
-                <div className="flex items-center gap-6 mb-8">
-                  <div className="w-20 h-20 bg-brand-blue border-4 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    {(() => {
-                      const Icon =
-                        IconMap[selectedPuzzle.icon as keyof typeof IconMap];
-                      return Icon ? (
-                        <Icon size={40} className="text-white" />
-                      ) : null;
-                    })()}
-                  </div>
-                  <div>
-                    <span className="text-xs font-black uppercase text-brand-orange tracking-widest">
-                      {selectedPuzzle.category}
-                    </span>
-                    <h2 className="text-4xl font-black tracking-tight uppercase">
-                      {getPuzzleCopy(selectedPuzzle).name}
-                    </h2>
-                  </div>
-                </div>
-
-                <p className="text-xl font-bold leading-relaxed mb-8 italic text-gray-600">
-                  "{getPuzzleCopy(selectedPuzzle).description}"
-                </p>
-
-                <div className="grid grid-cols-2 gap-6 mb-8">
-                  <div className="p-5 bg-brand-yellow border-4 border-black rounded-2xl">
-                    <span className="block text-[10px] font-black uppercase opacity-50 mb-1">
-                      {t('record')}
-                    </span>
-                    <span className="text-3xl font-black">
-                      {stats.bestScores[selectedPuzzle.id] || '0000'}
-                    </span>
-                  </div>
-                  <div className="p-5 bg-brand-green/20 border-4 border-black rounded-2xl">
-                    <span className="block text-[10px] font-black uppercase opacity-50 mb-1">
-                      {t('status')}
-                    </span>
-                    <span className="text-xl font-black uppercase">
-                      {selectedDifficulty}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mb-8">
-                  <span className="block text-[10px] font-black uppercase opacity-50 mb-3">
-                    {t('intensity')}
-                  </span>
-                  <div className="grid grid-cols-4 gap-2">
-                    {(
-                      ['EASY', 'NORMAL', 'HARD', 'CHAMPION'] as Difficulty[]
-                    ).map((d) => (
-                      <button
-                        key={d}
-                        onClick={() => setSelectedDifficulty(d)}
-                        className={`py-2 px-1 border-4 border-black rounded-xl font-black text-[10px] transition-all ${
-                          selectedDifficulty === d
-                            ? 'bg-brand-blue text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5'
-                            : 'bg-white hover:bg-brand-yellow'
-                        }`}
-                      >
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-4 mb-8">
-                  <button
-                    className="flex-1 bg-white border-4 border-black rounded-2xl py-6 font-black text-xl tracking-widest uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-2"
-                    onClick={() => setShowTutorial(true)}
-                  >
-                    <IconMap.HelpCircle size={24} />
-                    {t('howToPlay')}
-                  </button>
-                  <button
-                    disabled={
-                      ![
-                        'math-rush',
-                        'grid-memory',
-                        'stroop-test',
-                        'shape-stack',
-                        'pattern-pursuit',
-                        'neural-react',
-                      ].includes(selectedPuzzle.id)
-                    }
-                    className="flex-2 bg-brand-blue text-white border-4 border-black rounded-2xl py-6 font-black text-xl tracking-widest uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    onClick={() => setCurrentView('TRAINING')}
-                  >
-                    {[
-                      'math-rush',
-                      'grid-memory',
-                      'stroop-test',
-                      'shape-stack',
-                      'pattern-pursuit',
-                      'neural-react',
-                    ].includes(selectedPuzzle.id)
-                      ? t('startTraining')
-                      : t('loading')}
-                  </button>
-                </div>
-              </div>
-
-              <AnimatePresence>
-                {showTutorial && selectedPuzzle?.tutorial && (
-                  <TutorialOverlay
-                    steps={selectedPuzzle.tutorial}
-                    onClose={() => setShowTutorial(false)}
-                  />
-                )}
-              </AnimatePresence>
             </motion.div>
           )}
 
@@ -850,12 +720,17 @@ export default function App({
       <footer className="mt-12 flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t-4 border-black/10">
         <div className="flex gap-4">
           <button
-            onClick={() => setCurrentView('RANKINGS')}
+            onClick={() => router.push('/rankings', { locale })}
             className="brutalist-button"
           >
             {t('rankings')}
           </button>
-          <button className="brutalist-button">{t('settings')}</button>
+          <button
+            className="brutalist-button"
+            onClick={() => router.push('/settings', { locale })}
+          >
+            {t('settings')}
+          </button>
         </div>
         <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">
           {t('footerStatus')}
