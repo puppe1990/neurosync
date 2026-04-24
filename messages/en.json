@@ -1,0 +1,102 @@
+{
+  "metadata": {
+    "description": "Cognitive training games for memory, attention and reaction speed."
+  },
+  "localeSwitcher": {
+    "label": "Change language",
+    "pt-BR": "PT-BR",
+    "en": "EN"
+  },
+  "auth": {
+    "signInEyebrow": "Neural access",
+    "signInTitle": "Sign in",
+    "signUpEyebrow": "New profile",
+    "signUpTitle": "Create account",
+    "summary": "Save your scores, track your streak and compete on the neural leaderboard.",
+    "nameLabel": "Name",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "processing": "Processing...",
+    "createAccount": "Create account",
+    "signInCta": "Sign in",
+    "alreadyHaveAccount": "I already have an account",
+    "createNewAccount": "Create a new account",
+    "errors": {
+      "invalidCredentials": "Invalid email or password.",
+      "emailAlreadyExists": "This email is already registered.",
+      "retry": "Review the form data and try again."
+    }
+  },
+  "app": {
+    "profile": "Neuro profile",
+    "player": "Player",
+    "logout": "Sign out",
+    "dailyChallengeEyebrow": "Today's challenge",
+    "dailyChallengeTitle": "Neural Prime",
+    "dailyChallengeDone": "Challenge complete. You mastered Neural Prime today.",
+    "dailyChallengeReady": "Your memory is up 12% today. Ready for the daily challenge?",
+    "challengeCompleted": "Completed",
+    "playChallenge": "Play challenge",
+    "cognitiveBalance": "Cognitive balance",
+    "heroEyebrow": "Grand challenge",
+    "heroTitle": "Bio-Sensory Cup",
+    "heroCta": "Play now",
+    "back": "Back",
+    "record": "Best score",
+    "status": "Status",
+    "intensity": "Intensity level",
+    "howToPlay": "How to play?",
+    "startTraining": "Start training",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "scoreLabel": "Neuro score",
+    "excellentPerformance": "Excellent performance",
+    "accuracy": "Accuracy",
+    "time": "Time",
+    "nextChallenge": "Next challenge",
+    "performanceLog": "Performance log",
+    "totalGames": "Total games",
+    "dayStreak": "Day streak",
+    "history": "Neural history",
+    "waitingHistory": "Awaiting brain connection...",
+    "rankings": "Neural leaderboard",
+    "syncingRankings": "Syncing leaderboard...",
+    "noScores": "No synced scores yet.",
+    "rank": "Rank",
+    "puzzle": "Puzzle",
+    "score": "Score",
+    "settings": "Settings",
+    "footerStatus": "© 2026 NEURO-SPEC LABS // SYSTEM STATUS: ACTIVE",
+    "difficultyBadge": {
+      "expert": "Expert",
+      "medium": "Medium",
+      "normal": "Normal"
+    }
+  },
+  "puzzles": {
+    "mathRush": {
+      "name": "Math Rush",
+      "description": "Solve simple arithmetic operations as fast as possible."
+    },
+    "gridMemory": {
+      "name": "Grid Memory",
+      "description": "Memorize the position of the tiles shown on screen."
+    },
+    "stroopTest": {
+      "name": "Color Conflict",
+      "description": "Identify the word color while ignoring the written text."
+    },
+    "shapeStack": {
+      "name": "Mental Rotation",
+      "description": "Decide whether rotated shapes are identical."
+    },
+    "patternPursuit": {
+      "name": "Pattern Pursuit",
+      "description": "Find the odd icon in the grid as quickly as possible."
+    },
+    "neuralReact": {
+      "name": "Neural React",
+      "description": "Test your reaction speed. Click as soon as the color changes."
+    }
+  }
+}

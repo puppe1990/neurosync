@@ -1,8 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useActionState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { AuthFormState } from '@/app/actions/auth';
+import { Link } from '@/i18n/navigation';
 
 interface AuthFormProps {
   mode: 'signin' | 'signup';
@@ -12,13 +13,14 @@ interface AuthFormProps {
 export default function AuthForm({ mode, action }: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, {});
   const isSignup = mode === 'signup';
+  const t = useTranslations('auth');
 
   return (
     <form action={formAction} className="space-y-5">
       {isSignup && (
         <label className="block">
           <span className="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">
-            Nome
+            {t('nameLabel')}
           </span>
           <input
             className="w-full bg-white border-4 border-black rounded-2xl px-4 py-3 font-black outline-none focus:bg-brand-yellow"
@@ -33,7 +35,7 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
 
       <label className="block">
         <span className="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">
-          Email
+          {t('emailLabel')}
         </span>
         <input
           className="w-full bg-white border-4 border-black rounded-2xl px-4 py-3 font-black outline-none focus:bg-brand-yellow"
@@ -46,7 +48,7 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
 
       <label className="block">
         <span className="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">
-          Senha
+          {t('passwordLabel')}
         </span>
         <input
           className="w-full bg-white border-4 border-black rounded-2xl px-4 py-3 font-black outline-none focus:bg-brand-yellow"
@@ -69,7 +71,11 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
         disabled={pending}
         type="submit"
       >
-        {pending ? 'Processando...' : isSignup ? 'Criar conta' : 'Entrar'}
+        {pending
+          ? t('processing')
+          : isSignup
+            ? t('createAccount')
+            : t('signInCta')}
       </button>
 
       <div className="text-center text-sm font-black uppercase">
@@ -78,14 +84,14 @@ export default function AuthForm({ mode, action }: AuthFormProps) {
             className="underline decoration-4 underline-offset-4"
             href="/signin"
           >
-            Ja tenho conta
+            {t('alreadyHaveAccount')}
           </Link>
         ) : (
           <Link
             className="underline decoration-4 underline-offset-4"
             href="/signup"
           >
-            Criar conta nova
+            {t('createNewAccount')}
           </Link>
         )}
       </div>

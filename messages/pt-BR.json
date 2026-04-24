@@ -1,0 +1,102 @@
+{
+  "metadata": {
+    "description": "Jogos de treino cognitivo para memoria, atencao e velocidade de reacao."
+  },
+  "localeSwitcher": {
+    "label": "Trocar idioma",
+    "pt-BR": "PT-BR",
+    "en": "EN"
+  },
+  "auth": {
+    "signInEyebrow": "Acesso neural",
+    "signInTitle": "Entrar",
+    "signUpEyebrow": "Novo perfil",
+    "signUpTitle": "Criar conta",
+    "summary": "Salve seus scores, acompanhe sua sequencia e dispute o ranking neural.",
+    "nameLabel": "Nome",
+    "emailLabel": "Email",
+    "passwordLabel": "Senha",
+    "processing": "Processando...",
+    "createAccount": "Criar conta",
+    "signInCta": "Entrar",
+    "alreadyHaveAccount": "Ja tenho conta",
+    "createNewAccount": "Criar conta nova",
+    "errors": {
+      "invalidCredentials": "Email ou senha invalidos.",
+      "emailAlreadyExists": "Este email ja esta cadastrado.",
+      "retry": "Revise os dados e tente novamente."
+    }
+  },
+  "app": {
+    "profile": "Neuro perfil",
+    "player": "Player",
+    "logout": "Sair",
+    "dailyChallengeEyebrow": "Desafio hoje",
+    "dailyChallengeTitle": "Neural Prime",
+    "dailyChallengeDone": "Desafio completo! Voce dominou o Neural Prime hoje.",
+    "dailyChallengeReady": "Sua memoria aumentou 12% hoje! Pronto para o desafio diario?",
+    "challengeCompleted": "Concluido",
+    "playChallenge": "Jogar desafio",
+    "cognitiveBalance": "Balance cognitivo",
+    "heroEyebrow": "Grande desafio",
+    "heroTitle": "Copa bio-sensorial",
+    "heroCta": "Jogar agora",
+    "back": "Voltar",
+    "record": "Recorde",
+    "status": "Status",
+    "intensity": "Nivel de intensidade",
+    "howToPlay": "Como jogar?",
+    "startTraining": "Comecar treino",
+    "loading": "Carregando...",
+    "cancel": "Cancelar",
+    "scoreLabel": "Neuro score",
+    "excellentPerformance": "Performance excelente",
+    "accuracy": "Precisao",
+    "time": "Tempo",
+    "nextChallenge": "Proximo desafio",
+    "performanceLog": "Performance log",
+    "totalGames": "Total jogos",
+    "dayStreak": "Combo dias",
+    "history": "Historico neural",
+    "waitingHistory": "Aguardando conexao cerebral...",
+    "rankings": "Ranking neural",
+    "syncingRankings": "Sincronizando ranking...",
+    "noScores": "Nenhum score sincronizado ainda.",
+    "rank": "Rank",
+    "puzzle": "Puzzle",
+    "score": "Score",
+    "settings": "Config",
+    "footerStatus": "© 2026 NEURO-SPEC LABS // SYSTEM STATUS: ACTIVE",
+    "difficultyBadge": {
+      "expert": "Expert",
+      "medium": "Medium",
+      "normal": "Normal"
+    }
+  },
+  "puzzles": {
+    "mathRush": {
+      "name": "Calculo rapido",
+      "description": "Resolva operacoes aritmeticas simples o mais rapido possivel."
+    },
+    "gridMemory": {
+      "name": "Memoria visual",
+      "description": "Memorize a posicao dos blocos que aparecem na tela."
+    },
+    "stroopTest": {
+      "name": "Conflito de cores",
+      "description": "Identifique a cor da palavra, ignorando o texto escrito."
+    },
+    "shapeStack": {
+      "name": "Rotacao mental",
+      "description": "Determine se as formas rotacionadas sao identicas."
+    },
+    "patternPursuit": {
+      "name": "Pattern Pursuit",
+      "description": "Encontre o icone intruso na grade o mais rapido possivel."
+    },
+    "neuralReact": {
+      "name": "Neural React",
+      "description": "Teste sua velocidade de reacao. Clique assim que a cor mudar."
+    }
+  }
+}

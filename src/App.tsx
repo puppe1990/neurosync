@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLocale, useTranslations } from 'next-intl';
 import { IconMap } from './icons';
 import {
   PUZZLES,
@@ -15,6 +16,7 @@ import {
   AuthenticatedUser,
   RankingEntry,
 } from './types';
+import LanguageSwitcher from './components/LanguageSwitcher';
 import MathRush from './components/MathRush';
 import GridMemory from './components/GridMemory';
 import StroopTest from './components/StroopTest';
@@ -22,6 +24,8 @@ import ShapeStack from './components/ShapeStack';
 import TutorialOverlay from './components/TutorialOverlay';
 import PatternPursuit from './components/PatternPursuit';
 import NeuralReact from './components/NeuralReact';
+import { useRouter } from '@/i18n/navigation';
+import type { AppLocale } from '@/i18n/config';
 
 // Views
 type View =
@@ -32,11 +36,26 @@ type View =
   | 'RESULTS'
   | 'RANKINGS';
 
+const puzzleMessageKeys = {
+  'math-rush': 'mathRush',
+  'grid-memory': 'gridMemory',
+  'stroop-test': 'stroopTest',
+  'shape-stack': 'shapeStack',
+  'pattern-pursuit': 'patternPursuit',
+  'neural-react': 'neuralReact',
+} as const;
+
 export default function App({
   initialUser,
+  locale,
 }: {
   initialUser: AuthenticatedUser;
+  locale: AppLocale;
 }) {
+  const router = useRouter();
+  const activeLocale = useLocale();
+  const t = useTranslations('app');
+  const puzzleT = useTranslations('puzzles');
   const [currentView, setCurrentView] = useState<View>('MENU');
   const [selectedPuzzle, setSelectedPuzzle] = useState<PuzzleConfig | null>(
     null,
@@ -65,6 +84,20 @@ export default function App({
 
   const todayStr = new Date().toISOString().split('T')[0];
   const isChallengeDoneToday = stats.lastChallengeDate === todayStr;
+  const formatDate = (value: string) =>
+    new Date(value).toLocaleDateString(activeLocale);
+  const getPuzzleCopy = (puzzle: PuzzleConfig) => {
+    const key = puzzleMessageKeys[puzzle.id as keyof typeof puzzleMessageKeys];
+
+    if (!key) {
+      return { name: puzzle.name, description: puzzle.description };
+    }
+
+    return {
+      name: puzzleT(`${key}.name`),
+      description: puzzleT(`${key}.description`),
+    };
+  };
 
   useEffect(() => {
     localStorage.setItem('neurosync_stats', JSON.stringify(stats));
@@ -163,7 +196,7 @@ export default function App({
 
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' });
-    window.location.href = '/signin';
+    router.replace('/signin', { locale });
   };
 
   return (
@@ -210,7 +243,7 @@ export default function App({
               className={`text-right leading-none group transition-colors ${currentView === 'STATS' ? 'text-brand-orange' : ''}`}
             >
               <p className="text-[10px] font-black uppercase text-gray-500">
-                Neuro Perfil
+                {t('profile')}
               </p>
               <p className="text-xl font-black underline underline-offset-4 decoration-2">
                 STREAK: {stats.dailyStreak}
@@ -219,7 +252,7 @@ export default function App({
             <div className="hidden md:block w-1 h-10 bg-black"></div>
             <div className="hidden md:flex flex-col leading-none">
               <span className="text-[10px] font-black uppercase text-gray-500">
-                Player
+                {t('player')}
               </span>
               <span className="text-sm font-black uppercase">
                 {initialUser.name}
@@ -228,10 +261,11 @@ export default function App({
             <button
               onClick={handleLogout}
               className="w-10 h-10 bg-brand-orange border-4 border-black rounded-xl flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all"
-              title="Sair"
+              title={t('logout')}
             >
               <IconMap.LogOut size={18} className="text-white" />
             </button>
+            <LanguageSwitcher />
           </div>
         </div>
       </header>
@@ -269,16 +303,16 @@ export default function App({
                 <div className="bg-brand-blue border-4 border-black p-6 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden flex flex-col min-h-[300px]">
                   <div className="absolute -top-4 -right-4 bg-brand-gold w-24 h-24 rounded-full border-4 border-black"></div>
                   <p className="text-sm font-black uppercase text-blue-900 mb-2">
-                    Desafio Hoje
+                    {t('dailyChallengeEyebrow')}
                   </p>
                   <h2 className="text-3xl font-black text-white leading-tight mb-4">
-                    Neural Prime
+                    {t('dailyChallengeTitle')}
                   </h2>
                   <div className="bg-white border-2 border-black p-4 rounded-xl relative mt-auto">
                     <p className="text-lg font-bold italic leading-snug">
                       {isChallengeDoneToday
-                        ? 'Desafio completo! Você dominou o Neural Prime hoje.'
-                        : 'Sua memória aumentou 12% hoje! Pronto para o desafio diário?'}
+                        ? t('dailyChallengeDone')
+                        : t('dailyChallengeReady')}
                     </p>
                     <div className="absolute -bottom-2 left-6 w-4 h-4 bg-white border-b-2 border-r-2 border-black rotate-45"></div>
                   </div>
@@ -293,13 +327,15 @@ export default function App({
                     }}
                     className={`mt-6 brutalist-button w-full text-center ${isChallengeDoneToday ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
-                    {isChallengeDoneToday ? 'CONCLUÍDO' : 'Jogar Desafio'}
+                    {isChallengeDoneToday
+                      ? t('challengeCompleted')
+                      : t('playChallenge')}
                   </button>
                 </div>
 
                 <div className="bg-white border-4 border-black p-5 rounded-3xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <h3 className="font-black uppercase text-xs text-gray-400 tracking-widest mb-4">
-                    Balancê Cognitivo
+                    {t('cognitiveBalance')}
                   </h3>
                   <div className="flex justify-between items-end h-24 gap-2">
                     <div
@@ -332,6 +368,7 @@ export default function App({
                   ];
                   const color = colors[idx % colors.length];
                   const Icon = IconMap[puzzle.icon as keyof typeof IconMap];
+                  const localizedPuzzle = getPuzzleCopy(puzzle);
 
                   return (
                     <motion.div
@@ -350,15 +387,19 @@ export default function App({
                         {Icon && <Icon size={24} />}
                       </div>
                       <h3 className="text-2xl font-black text-white uppercase">
-                        {puzzle.name}
+                        {localizedPuzzle.name}
                       </h3>
                       <p
                         className={`font-bold text-sm mt-1 opacity-80 ${idx === 2 ? 'text-gray-900' : 'text-white'}`}
                       >
-                        {puzzle.description}
+                        {localizedPuzzle.description}
                       </p>
                       <div className="mt-4 text-[10px] font-black bg-black text-white inline-block px-3 py-1 rounded-full uppercase">
-                        {idx === 0 ? 'Expert' : idx === 1 ? 'Medium' : 'Normal'}
+                        {idx === 0
+                          ? t('difficultyBadge.expert')
+                          : idx === 1
+                            ? t('difficultyBadge.medium')
+                            : t('difficultyBadge.normal')}
                       </div>
                     </motion.div>
                   );
@@ -373,14 +414,14 @@ export default function App({
                 >
                   <div className="flex flex-col text-center sm:text-left mb-6 sm:mb-0">
                     <span className="text-brand-orange font-black italic uppercase text-lg">
-                      Grande Desafio
+                      {t('heroEyebrow')}
                     </span>
                     <h4 className="text-white text-3xl font-black tracking-tight uppercase italic">
-                      Copa Bio-Sensorial
+                      {t('heroTitle')}
                     </h4>
                   </div>
                   <button className="bg-white border-4 border-black px-8 py-3 rounded-2xl font-black text-xl hover:bg-brand-orange transition-colors">
-                    JOGAR AGORA
+                    {t('heroCta')}
                   </button>
                 </motion.div>
               </div>
@@ -401,7 +442,7 @@ export default function App({
                 className="brutalist-button mb-8 inline-flex items-center gap-2"
               >
                 <IconMap.ChevronLeft size={14} />
-                <span>Voltar</span>
+                <span>{t('back')}</span>
               </button>
 
               <div className="bg-white brutalist-card p-8">
@@ -420,19 +461,19 @@ export default function App({
                       {selectedPuzzle.category}
                     </span>
                     <h2 className="text-4xl font-black tracking-tight uppercase">
-                      {selectedPuzzle.name}
+                      {getPuzzleCopy(selectedPuzzle).name}
                     </h2>
                   </div>
                 </div>
 
                 <p className="text-xl font-bold leading-relaxed mb-8 italic text-gray-600">
-                  "{selectedPuzzle.description}"
+                  "{getPuzzleCopy(selectedPuzzle).description}"
                 </p>
 
                 <div className="grid grid-cols-2 gap-6 mb-8">
                   <div className="p-5 bg-brand-yellow border-4 border-black rounded-2xl">
                     <span className="block text-[10px] font-black uppercase opacity-50 mb-1">
-                      Recorde
+                      {t('record')}
                     </span>
                     <span className="text-3xl font-black">
                       {stats.bestScores[selectedPuzzle.id] || '0000'}
@@ -440,7 +481,7 @@ export default function App({
                   </div>
                   <div className="p-5 bg-brand-green/20 border-4 border-black rounded-2xl">
                     <span className="block text-[10px] font-black uppercase opacity-50 mb-1">
-                      Status
+                      {t('status')}
                     </span>
                     <span className="text-xl font-black uppercase">
                       {selectedDifficulty}
@@ -450,7 +491,7 @@ export default function App({
 
                 <div className="mb-8">
                   <span className="block text-[10px] font-black uppercase opacity-50 mb-3">
-                    Nível de Intensidade
+                    {t('intensity')}
                   </span>
                   <div className="grid grid-cols-4 gap-2">
                     {(
@@ -477,7 +518,7 @@ export default function App({
                     onClick={() => setShowTutorial(true)}
                   >
                     <IconMap.HelpCircle size={24} />
-                    COMO JOGAR?
+                    {t('howToPlay')}
                   </button>
                   <button
                     disabled={
@@ -501,8 +542,8 @@ export default function App({
                       'pattern-pursuit',
                       'neural-react',
                     ].includes(selectedPuzzle.id)
-                      ? 'COMEÇAR TREINO'
-                      : 'CARREGANDO...'}
+                      ? t('startTraining')
+                      : t('loading')}
                   </button>
                 </div>
               </div>
@@ -568,7 +609,7 @@ export default function App({
                 onClick={() => setCurrentView('MENU')}
                 className="brutalist-button"
               >
-                Cancelar
+                {t('cancel')}
               </button>
             </motion.div>
           )}
@@ -585,21 +626,21 @@ export default function App({
               <div className="bg-brand-blue border-4 border-black p-12 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-12 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-4 bg-black/10"></div>
                 <span className="text-xs font-black tracking-[0.2em] text-white opacity-80 mb-4 block uppercase underline underline-offset-4 decoration-2">
-                  NEURO SCORE
+                  {t('scoreLabel')}
                 </span>
                 <h2 className="text-7xl font-black text-white tracking-tighter mb-4 italic">
                   {lastResult.score}
                 </h2>
                 <div className="flex items-center justify-center gap-2 text-brand-gold text-sm font-black uppercase">
                   <IconMap.Trophy size={20} />
-                  <span>Performance Excelente</span>
+                  <span>{t('excellentPerformance')}</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6 mb-12">
                 <div className="bg-white border-4 border-black p-5 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <span className="text-[10px] font-black uppercase opacity-40 block mb-1">
-                    Precisão
+                    {t('accuracy')}
                   </span>
                   <span className="text-2xl font-black">
                     {(lastResult.accuracy * 100).toFixed(0)}%
@@ -607,7 +648,7 @@ export default function App({
                 </div>
                 <div className="bg-white border-4 border-black p-5 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <span className="text-[10px] font-black uppercase opacity-40 block mb-1">
-                    Tempo
+                    {t('time')}
                   </span>
                   <span className="text-2xl font-black">
                     {(lastResult.timeSpent / 1000).toFixed(1)}s
@@ -619,7 +660,7 @@ export default function App({
                 onClick={() => setCurrentView('MENU')}
                 className="w-full bg-brand-orange border-4 border-black p-6 rounded-2xl font-black text-2xl text-white uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] transition-all"
               >
-                PROXIMO DESAFIO
+                {t('nextChallenge')}
               </button>
             </motion.div>
           )}
@@ -641,14 +682,14 @@ export default function App({
                   <IconMap.ChevronLeft size={16} />
                 </button>
                 <h2 className="text-4xl font-black tracking-tight uppercase">
-                  Performance Log
+                  {t('performanceLog')}
                 </h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                 <div className="bg-brand-gold border-4 border-black p-8 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                   <span className="text-xs font-black uppercase text-gray-900 opacity-60 block mb-2">
-                    Total Jogos
+                    {t('totalGames')}
                   </span>
                   <span className="text-6xl font-black italic">
                     {stats.sessions.length}
@@ -656,7 +697,7 @@ export default function App({
                 </div>
                 <div className="bg-brand-red border-4 border-black p-8 rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-white">
                   <span className="text-xs font-black uppercase opacity-60 block mb-2">
-                    Combo Dias
+                    {t('dayStreak')}
                   </span>
                   <span className="text-6xl font-black italic">
                     {stats.dailyStreak}
@@ -667,7 +708,7 @@ export default function App({
               <div className="brutalist-card overflow-hidden">
                 <div className="p-6 bg-black text-white flex justify-between items-center">
                   <span className="font-black uppercase text-sm tracking-widest italic">
-                    Histórico Neural
+                    {t('history')}
                   </span>
                   <IconMap.History size={20} className="text-brand-orange" />
                 </div>
@@ -682,9 +723,7 @@ export default function App({
                       >
                         <div className="flex flex-col">
                           <span className="text-lg font-black uppercase">
-                            {new Date(session.timestamp).toLocaleDateString(
-                              'pt-BR',
-                            )}
+                            {formatDate(session.timestamp)}
                           </span>
                           <span className="text-xs font-bold text-gray-500">
                             {session.results[0].category.toUpperCase()}
@@ -702,7 +741,7 @@ export default function App({
                     ))}
                   {stats.sessions.length === 0 && (
                     <div className="p-20 text-center text-gray-400 font-black uppercase tracking-[0.2em]">
-                      Aguardando conexão cerebral...
+                      {t('waitingHistory')}
                     </div>
                   )}
                 </div>
@@ -728,7 +767,7 @@ export default function App({
                     <IconMap.ChevronLeft size={16} />
                   </button>
                   <h2 className="text-4xl font-black tracking-tight uppercase">
-                    Ranking Neural
+                    {t('rankings')}
                   </h2>
                 </div>
                 <div className="bg-brand-gold border-4 border-black rounded-2xl px-5 py-3 font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
@@ -738,15 +777,15 @@ export default function App({
 
               <div className="brutalist-card overflow-hidden">
                 <div className="p-6 bg-black text-white grid grid-cols-12 gap-4 text-[10px] font-black uppercase tracking-widest">
-                  <span className="col-span-2">Rank</span>
-                  <span className="col-span-4">Player</span>
-                  <span className="col-span-3">Puzzle</span>
-                  <span className="col-span-3 text-right">Score</span>
+                  <span className="col-span-2">{t('rank')}</span>
+                  <span className="col-span-4">{t('player')}</span>
+                  <span className="col-span-3">{t('puzzle')}</span>
+                  <span className="col-span-3 text-right">{t('score')}</span>
                 </div>
                 <div className="divide-y-4 divide-black">
                   {rankingsLoading && (
                     <div className="p-16 text-center font-black uppercase tracking-[0.2em] text-gray-400">
-                      Sincronizando ranking...
+                      {t('syncingRankings')}
                     </div>
                   )}
                   {!rankingsLoading &&
@@ -765,15 +804,20 @@ export default function App({
                             {entry.playerName}
                           </p>
                           <p className="text-[10px] font-black uppercase text-gray-500">
-                            {new Date(entry.createdAt).toLocaleDateString(
-                              'pt-BR',
-                            )}
+                            {formatDate(entry.createdAt)}
                           </p>
                         </div>
                         <div className="col-span-3 min-w-0">
                           <p className="font-black uppercase truncate">
-                            {PUZZLES.find((p) => p.id === entry.puzzleId)
-                              ?.name ?? entry.puzzleId}
+                            {(() => {
+                              const puzzle = PUZZLES.find(
+                                (item) => item.id === entry.puzzleId,
+                              );
+
+                              return puzzle
+                                ? getPuzzleCopy(puzzle).name
+                                : entry.puzzleId;
+                            })()}
                           </p>
                           <p className="text-[10px] font-black uppercase text-gray-500">
                             {entry.difficulty}
@@ -792,7 +836,7 @@ export default function App({
                     ))}
                   {!rankingsLoading && rankings.length === 0 && (
                     <div className="p-20 text-center text-gray-400 font-black uppercase tracking-[0.2em]">
-                      Nenhum score sincronizado ainda.
+                      {t('noScores')}
                     </div>
                   )}
                 </div>
@@ -809,12 +853,12 @@ export default function App({
             onClick={() => setCurrentView('RANKINGS')}
             className="brutalist-button"
           >
-            Ranking
+            {t('rankings')}
           </button>
-          <button className="brutalist-button">Config</button>
+          <button className="brutalist-button">{t('settings')}</button>
         </div>
         <p className="text-gray-500 font-black uppercase text-[10px] tracking-widest">
-          © 2026 NEURO-SPEC LABS // SYSTEM STATUS: ACTIVE
+          {t('footerStatus')}
         </p>
       </footer>
     </div>
